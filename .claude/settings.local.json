@@ -64,7 +64,8 @@
       "Bash(python units_test.py)",
       "Bash(python *)",
       "Bash(tasklist)",
-      "Bash(taskkill *)"
+      "Bash(taskkill *)",
+      "Bash(npm run *)"
     ]
   }
 }
