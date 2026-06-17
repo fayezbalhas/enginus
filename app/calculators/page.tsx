@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Navbar from '../components/Navbar'
 
 const calculators = [
   {
@@ -86,16 +87,6 @@ export default function CalculatorsPage() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .nav-link { color: #888; text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
-        .nav-link:hover { color: #f0f0f0; }
-
-        .btn-primary {
-          background: #cc0000; color: #fff; border: none; padding: 10px 22px;
-          font-size: 13px; font-weight: 600; border-radius: 4px; cursor: pointer;
-          text-decoration: none; display: inline-block; transition: all 0.2s;
-        }
-        .btn-primary:hover { background: #e60000; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(204,0,0,0.35); }
-
         .filter-btn {
           background: transparent; color: #666; border: 1px solid #222; padding: 7px 16px;
           font-size: 12px; font-weight: 500; border-radius: 3px; cursor: pointer;
@@ -132,23 +123,23 @@ export default function CalculatorsPage() {
 
         .arrow-icon { opacity: 0; transform: translateX(-4px); transition: all 0.3s; font-size: 18px; color: #cc0000; }
         .calc-card:hover .arrow-icon { opacity: 1; transform: translateX(0); }
+
+        .calc-grid { grid-template-columns: repeat(3, 1fr); }
+
+        @media (max-width: 768px) {
+          .calc-grid { grid-template-columns: 1fr !important; }
+          .calcs-header { padding: 60px 20px 40px !important; }
+          .calcs-body { padding: 40px 20px 80px !important; }
+          .filter-btn { min-height: 44px; padding: 10px 16px; }
+          .calc-card { padding: 22px 18px; }
+        }
       `}</style>
 
       {/* Navbar */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(10,10,10,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #1a1a1a', padding: '0 48px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <a href="/" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '20px', fontWeight: 700, letterSpacing: '-0.02em', textDecoration: 'none', color: '#f0f0f0' }}>
-          ENGI<span style={{ color: '#cc0000' }}>NUS</span>
-        </a>
-        <div style={{ display: 'flex', gap: '36px', alignItems: 'center' }}>
-          <a href="/calculators" className="nav-link" style={{ color: '#f0f0f0' }}>Calculators</a>
-          <a href="/templates" className="nav-link">Templates</a>
-          <a href="/about" className="nav-link">About</a>
-          <a href="/templates" className="btn-primary">Get Templates</a>
-        </div>
-      </nav>
+      <Navbar activePage="calculators" />
 
       {/* Header */}
-      <section style={{ padding: '80px 48px 56px', borderBottom: '1px solid #1a1a1a' }}>
+      <section className="calcs-header" style={{ padding: '80px 48px 56px', borderBottom: '1px solid #1a1a1a' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           <div className={`fade-in${visible ? ' show' : ''}`}>
             <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.14em', color: '#cc0000', textTransform: 'uppercase', marginBottom: '16px' }}>Free Tools</div>
@@ -172,9 +163,9 @@ export default function CalculatorsPage() {
       </section>
 
       {/* Calculators Grid */}
-      <section style={{ padding: '56px 48px 100px' }}>
+      <section className="calcs-body" style={{ padding: '56px 48px 100px' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+          <div className="calc-grid" style={{ display: 'grid', gap: '16px' }}>
             {filtered.map((calc, i) => (
               <a
                 key={calc.slug}

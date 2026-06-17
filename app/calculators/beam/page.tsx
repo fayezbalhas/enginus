@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import Link from 'next/link'
+import Navbar from '../../components/Navbar'
 import type { BeamType, BeamSolution, ExtremePoint, PointLoad, UDLLoad, TrapezoidalLoad, MomentLoad, SectionProps } from './calculations'
 import { solveBeam } from './calculations'
 import {
@@ -627,13 +627,6 @@ export default function BeamCalculatorPage() {
         .nav-link { color: #888; text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
         .nav-link:hover { color: #f0f0f0; }
 
-        .btn-primary {
-          background: #cc0000; color: #fff; border: none; padding: 10px 22px;
-          font-size: 13px; font-weight: 600; border-radius: 4px; cursor: pointer;
-          text-decoration: none; display: inline-block; transition: all 0.2s;
-        }
-        .btn-primary:hover { background: #e60000; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(204,0,0,0.35); }
-
         .filter-btn {
           background: transparent; color: #888; border: 1px solid #2a2a2a; padding: 8px 18px;
           font-size: 12px; font-weight: 600; border-radius: 4px; cursor: pointer;
@@ -833,6 +826,8 @@ export default function BeamCalculatorPage() {
           .layout-grid { grid-template-columns: 1fr; }
           .beam-type-grid { grid-template-columns: 1fr; }
           .field-grid.cols-3 { grid-template-columns: 1fr 1fr; }
+          .beam-header-section { padding: 32px 20px 20px !important; }
+          .beam-main-section { padding: 16px 20px 80px !important; }
         }
         @media (max-width: 600px) {
           .field-grid, .field-grid.cols-3 { grid-template-columns: 1fr; }
@@ -840,24 +835,20 @@ export default function BeamCalculatorPage() {
           .load-row.pl, .load-row-header.pl,
           .load-row.trap, .load-row-header.trap,
           .load-row.mom, .load-row-header.mom { grid-template-columns: 1fr; }
+          .load-row-header { display: none; }
+          .filter-btn { min-height: 44px; padding: 10px 14px; }
+          .field-input, .field-select { min-height: 44px; padding: 12px 10px; }
+          .icon-btn { width: 44px; height: 44px; }
+          .btn-add { min-height: 44px; }
+          .beam-type-card { min-height: 64px; }
         }
       `}</style>
 
       {/* Navbar */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(10,10,10,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #1a1a1a', padding: '0 48px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '20px', fontWeight: 700, letterSpacing: '-0.02em', textDecoration: 'none', color: '#f0f0f0' }}>
-          ENGI<span style={{ color: '#cc0000' }}>NUS</span>
-        </Link>
-        <div style={{ display: 'flex', gap: '36px', alignItems: 'center' }}>
-          <a href="/calculators" className="nav-link" style={{ color: '#f0f0f0' }}>Calculators</a>
-          <a href="/templates" className="nav-link">Templates</a>
-          <a href="/about" className="nav-link">About</a>
-          <a href="/templates" className="btn-primary">Get Templates</a>
-        </div>
-      </nav>
+      <Navbar activePage="calculators" />
 
       {/* Header */}
-      <section style={{ padding: '48px 48px 28px', borderBottom: '1px solid #1a1a1a' }}>
+      <section className="beam-header-section" style={{ padding: '48px 48px 28px', borderBottom: '1px solid #1a1a1a' }}>
         <div style={{ maxWidth: '1180px', margin: '0 auto' }}>
           <a href="/calculators" className="nav-link" style={{ fontSize: '13px' }}>&larr; All Calculators</a>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '20px', marginTop: '14px' }}>
@@ -919,7 +910,7 @@ export default function BeamCalculatorPage() {
       </section>
 
       {/* Main */}
-      <section style={{ padding: '32px 48px 100px' }}>
+      <section className="beam-main-section" style={{ padding: '32px 48px 100px' }}>
         <div className="layout-grid" style={{ maxWidth: '1180px', margin: '0 auto' }}>
 
           {/* ---------------- Inputs ---------------- */}

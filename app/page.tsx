@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Navbar from './components/Navbar'
 
 export default function Home() {
-  const [scrollY, setScrollY] = useState(0)
   const [visible, setVisible] = useState<Record<string, boolean>>({})
   const [mouse, setMouse] = useState({ x: 0, y: 0 })
   const [loaded, setLoaded] = useState(false)
@@ -14,13 +14,6 @@ export default function Home() {
   useEffect(() => {
     const t = setTimeout(() => setLoaded(true), 100)
     return () => clearTimeout(t)
-  }, [])
-
-  // Scroll
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY)
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   // Mouse parallax
@@ -252,36 +245,24 @@ export default function Home() {
         .loaded .hero-stagger.d4 { animation-delay: 0.55s; }
         .loaded .hero-stagger.d5 { animation-delay: 0.7s; }
 
+        .beam-showcase-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+
         @media (max-width: 768px) {
-          .nav-desktop { display: none !important; }
           .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 28px !important; }
           .tools-grid { grid-template-columns: 1fr !important; }
           .cta-banner { flex-direction: column; align-items: flex-start !important; }
           .hero-pad { padding: 100px 20px 80px !important; }
+          .beam-showcase-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+          .home-section-pad { padding-left: 20px !important; padding-right: 20px !important; }
+          .home-footer { padding: 36px 20px !important; }
+          .step-row { gap: 20px !important; }
         }
       `}</style>
 
       <div className={loaded ? 'loaded' : ''}>
 
         {/* Navbar */}
-        <nav style={{
-          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-          background: scrollY > 40 ? 'rgba(10,10,10,0.85)' : 'transparent',
-          backdropFilter: scrollY > 40 ? 'blur(16px)' : 'none',
-          borderBottom: scrollY > 40 ? '1px solid #1e1e1e' : '1px solid transparent',
-          transition: 'all 0.4s', padding: '0 48px', height: '64px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        }}>
-          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '22px', fontWeight: 700, letterSpacing: '-0.02em' }}>
-            ENGI<span style={{ color: '#cc0000' }}>NUS</span>
-          </div>
-          <div className="nav-desktop" style={{ display: 'flex', gap: '36px', alignItems: 'center' }}>
-            <a href="/calculators" className="nav-link">Calculators</a>
-            <a href="/templates" className="nav-link">Templates</a>
-            <a href="/about" className="nav-link">About</a>
-            <a href="/templates" className="btn-primary" style={{ padding: '10px 22px', fontSize: '13px' }}>Get Templates</a>
-          </div>
-        </nav>
+        <Navbar fixed />
 
         {/* Hero */}
         <section className="hero-pad" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '120px 24px 80px', position: 'relative', overflow: 'hidden' }}>
@@ -335,7 +316,7 @@ export default function Home() {
         </section>
 
         {/* Stats */}
-        <section style={{ borderTop: '1px solid #1a1a1a', borderBottom: '1px solid #1a1a1a', padding: '60px 48px', position: 'relative', zIndex: 3, background: '#0a0a0a' }}>
+        <section className="home-section-pad" style={{ borderTop: '1px solid #1a1a1a', borderBottom: '1px solid #1a1a1a', padding: '60px 48px', position: 'relative', zIndex: 3, background: '#0a0a0a' }}>
           <div className="stats-grid" style={{ maxWidth: '900px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '40px' }}>
             {stats.map((s, i) => (
               <div key={i} id={`stat-${i}`} data-animate className={`stat-card fade-up${visible[`stat-${i}`] ? ' visible' : ''}`} style={{ transitionDelay: `${i * 0.1}s` }}>
@@ -347,8 +328,8 @@ export default function Home() {
         </section>
 
         {/* Animated Beam Showcase */}
-        <section style={{ padding: '110px 48px', position: 'relative', zIndex: 3, background: '#0a0a0a' }}>
-          <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '60px', alignItems: 'center' }}>
+        <section className="home-section-pad" style={{ padding: '110px 48px', position: 'relative', zIndex: 3, background: '#0a0a0a' }}>
+          <div className="beam-showcase-grid" style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <div id="beam-text" data-animate className={`fade-up${visible['beam-text'] ? ' visible' : ''}`}>
               <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', color: '#cc0000', textTransform: 'uppercase', marginBottom: '16px' }}>Live Analysis</div>
               <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(26px, 3.5vw, 38px)', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.15, marginBottom: '18px' }}>
@@ -398,7 +379,7 @@ export default function Home() {
         </section>
 
         {/* Tools Grid */}
-        <section style={{ padding: '40px 48px 100px', position: 'relative', zIndex: 3, background: '#0a0a0a' }}>
+        <section className="home-section-pad" style={{ padding: '40px 48px 100px', position: 'relative', zIndex: 3, background: '#0a0a0a' }}>
           <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <div id="tools-header" data-animate className={`fade-up${visible['tools-header'] ? ' visible' : ''}`} style={{ marginBottom: '56px' }}>
               <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', color: '#cc0000', textTransform: 'uppercase', marginBottom: '16px' }}>What We Offer</div>
@@ -426,7 +407,7 @@ export default function Home() {
         </section>
 
         {/* How it works */}
-        <section style={{ padding: '100px 48px', position: 'relative', zIndex: 3, background: '#0c0c0c', borderTop: '1px solid #1a1a1a', borderBottom: '1px solid #1a1a1a' }}>
+        <section className="home-section-pad" style={{ padding: '100px 48px', position: 'relative', zIndex: 3, background: '#0c0c0c', borderTop: '1px solid #1a1a1a', borderBottom: '1px solid #1a1a1a' }}>
           <div style={{ maxWidth: '900px', margin: '0 auto' }}>
             <div id="how-header" data-animate className={`fade-up${visible['how-header'] ? ' visible' : ''}`} style={{ marginBottom: '48px', textAlign: 'center' }}>
               <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', color: '#cc0000', textTransform: 'uppercase', marginBottom: '16px' }}>How It Works</div>
@@ -448,7 +429,7 @@ export default function Home() {
         </section>
 
         {/* CTA Banner */}
-        <section style={{ padding: '100px 48px', position: 'relative', zIndex: 3, background: '#0a0a0a' }}>
+        <section className="home-section-pad" style={{ padding: '100px 48px', position: 'relative', zIndex: 3, background: '#0a0a0a' }}>
           <div id="cta" data-animate className={`cta-banner fade-up${visible['cta'] ? ' visible' : ''}`} style={{ maxWidth: '1000px', margin: '0 auto', border: '1px solid #1e1e1e', borderLeft: '4px solid #cc0000', borderRadius: '8px', padding: '60px 56px', background: 'linear-gradient(135deg, #0f0f0f, #0a0a0a)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '40px', flexWrap: 'wrap', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: '-50%', right: '-10%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(204,0,0,0.08), transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ position: 'relative', zIndex: 1 }}>
@@ -462,7 +443,7 @@ export default function Home() {
         </section>
 
         {/* Footer */}
-        <footer style={{ borderTop: '1px solid #1a1a1a', padding: '44px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', position: 'relative', zIndex: 3, background: '#0a0a0a' }}>
+        <footer className="home-footer" style={{ borderTop: '1px solid #1a1a1a', padding: '44px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', position: 'relative', zIndex: 3, background: '#0a0a0a' }}>
           <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '16px', fontWeight: 700, letterSpacing: '-0.01em' }}>
             ENGI<span style={{ color: '#cc0000' }}>NUS</span>
           </div>

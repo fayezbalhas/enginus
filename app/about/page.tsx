@@ -1,3 +1,5 @@
+import Navbar from '../components/Navbar'
+
 export default function AboutPage() {
   return (
     <main style={{ background: '#0a0a0a', color: '#f0f0f0', fontFamily: "'Inter', sans-serif", minHeight: '100vh' }}>
@@ -14,23 +16,19 @@ export default function AboutPage() {
           text-decoration: none; display: inline-block; transition: all 0.2s;
         }
         .btn-primary:hover { background: #e60000; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(204,0,0,0.35); }
+
+        @media (max-width: 768px) {
+          .about-content { padding: 60px 20px !important; }
+          .about-footer { padding: 36px 20px !important; }
+          .btn-primary { min-height: 44px; display: flex; align-items: center; justify-content: center; }
+        }
       `}</style>
 
       {/* Navbar */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(10,10,10,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #1a1a1a', padding: '0 48px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <a href="/" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '20px', fontWeight: 700, letterSpacing: '-0.02em', textDecoration: 'none', color: '#f0f0f0' }}>
-          ENGI<span style={{ color: '#cc0000' }}>NUS</span>
-        </a>
-        <div style={{ display: 'flex', gap: '36px', alignItems: 'center' }}>
-          <a href="/calculators" className="nav-link">Calculators</a>
-          <a href="/templates" className="nav-link">Templates</a>
-          <a href="/about" className="nav-link" style={{ color: '#f0f0f0' }}>About</a>
-          <a href="/templates" className="btn-primary">Get Templates</a>
-        </div>
-      </nav>
+      <Navbar activePage="about" />
 
       {/* Content */}
-      <section style={{ padding: '90px 48px' }}>
+      <section className="about-content" style={{ padding: '90px 48px' }}>
         <div style={{ maxWidth: '700px', margin: '0 auto' }}>
           <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.14em', color: '#cc0000', textTransform: 'uppercase', marginBottom: '16px' }}>About</div>
           <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '24px' }}>
@@ -47,7 +45,7 @@ export default function AboutPage() {
       </section>
 
       {/* Footer */}
-      <footer style={{ borderTop: '1px solid #1a1a1a', padding: '44px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
+      <footer className="about-footer" style={{ borderTop: '1px solid #1a1a1a', padding: '44px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
         <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '16px', fontWeight: 700, letterSpacing: '-0.01em' }}>
           ENGI<span style={{ color: '#cc0000' }}>NUS</span>
         </div>
