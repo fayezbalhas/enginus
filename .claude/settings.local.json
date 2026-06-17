@@ -65,7 +65,8 @@
       "Bash(python *)",
       "Bash(tasklist)",
       "Bash(taskkill *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(xargs grep -li \"icon\")"
     ]
   }
 }
