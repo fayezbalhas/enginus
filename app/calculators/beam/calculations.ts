@@ -3,7 +3,7 @@
 // All inputs/outputs use a single consistent set of units (e.g. kN, m, kN*m^2
 // for EI) - unit handling lives in page.tsx.
 
-export type BeamType = 'simply-supported' | 'cantilever' | 'fixed-fixed'
+export type BeamType = 'simply-supported' | 'cantilever' | 'fixed-fixed' | 'propped-cantilever'
 
 // Load-type tags used for load combinations: dead, live, wind, snow.
 export type LoadType = 'G' | 'Q' | 'W' | 'S'
@@ -247,7 +247,9 @@ export function computeReactions(
     return { RA: RA_SS, RB: RB_SS, MA: 0, MB: 0 }
   }
 
-  if (type === 'cantilever') {
+  if (type === 'cantilever' || type === 'propped-cantilever') {
+    // propped-cantilever reactions require EI; caller must use solveBeam instead.
+    // Return cantilever-only values as a safe fallback.
     return { RA: Ftot, RB: 0, MA: rawMomentAboutA + signedMSum, MB: 0 }
   }
 
@@ -440,8 +442,10 @@ export function computeStressResults(
   return { maxNormalStress, maxShearStress, position: Mpos }
 }
 
-export function solveBeam(
-  type: BeamType,
+// Core solver for the three statically-determinate/standard types.
+// propped-cantilever is handled by solveBeam via superposition.
+function _solveCore(
+  type: 'simply-supported' | 'cantilever' | 'fixed-fixed',
   length: number,
   pointLoads: PointLoad[],
   udls: UDLLoad[],
@@ -459,8 +463,6 @@ export function solveBeam(
   const shear = x.map((xi) => shearAt(xi, RA, pointLoads, distLoads))
   const moment = x.map((xi) => momentAt(xi, M0, RA, pointLoads, distLoads, momentLoads))
 
-  // Double integration of M/EI (trapezoidal rule) to get slope and deflection,
-  // starting from zero slope/deflection at x = 0.
   const n = x.length
   const thetaRaw = new Array(n).fill(0)
   const yRaw = new Array(n).fill(0)
@@ -470,8 +472,6 @@ export function solveBeam(
     yRaw[i] = yRaw[i - 1] + ((thetaRaw[i - 1] + thetaRaw[i]) / 2) * dx
   }
 
-  // Cantilever: y(0) = y'(0) = 0 already satisfied. Otherwise enforce y(L) = 0
-  // by adding a linear correction term.
   const C1 = type === 'cantilever' ? 0 : -yRaw[n - 1] / length
   const deflection = yRaw.map((y, i) => -(y + C1 * x[i]))
 
@@ -491,18 +491,36 @@ export function solveBeam(
 
   const stressResults = section ? computeStressResults(maxMoment, minMoment, maxShear, minShear, section) : null
 
-  return {
-    reactions,
-    x,
-    shear,
-    moment,
-    deflection,
-    maxShear,
-    minShear,
-    maxMoment,
-    minMoment,
-    maxDeflection,
-    keyPoints,
-    stressResults,
+  return { reactions, x, shear, moment, deflection, maxShear, minShear, maxMoment, minMoment, maxDeflection, keyPoints, stressResults }
+}
+
+export function solveBeam(
+  type: BeamType,
+  length: number,
+  pointLoads: PointLoad[],
+  udls: UDLLoad[],
+  trapezoidalLoads: TrapezoidalLoad[],
+  momentLoads: MomentLoad[],
+  EI: number,
+  section?: SectionProps
+): BeamSolution {
+  if (type !== 'propped-cantilever') {
+    return _solveCore(type, length, pointLoads, udls, trapezoidalLoads, momentLoads, EI, section)
   }
+
+  // Propped cantilever: fixed at A (x=0), pin/roller at B (x=length).
+  // Force method: find R_B that enforces δ(L) = 0 on the cantilever.
+  const cant = _solveCore('cantilever', length, pointLoads, udls, trapezoidalLoads, momentLoads, EI)
+  const dB = cant.deflection[cant.deflection.length - 1] // downward positive
+  const fBB = length ** 3 / (3 * EI)                     // flexibility at B per unit load
+  const RB = fBB > 0 ? dB / fBB : 0
+
+  // Re-solve as cantilever with the prop reaction added as an upward point load at B.
+  const augLoads: PointLoad[] = [
+    ...pointLoads,
+    { id: '__prop__', position: length, magnitude: -RB, label: 'R_B', loadType: 'G' },
+  ]
+  const sol = _solveCore('cantilever', length, augLoads, udls, trapezoidalLoads, momentLoads, EI, section)
+
+  return { ...sol, reactions: { RA: sol.reactions.RA, RB, MA: sol.reactions.MA, MB: 0 } }
 }

@@ -70,11 +70,16 @@ export default function Navbar({
         .n-burger.open .n-bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
         .n-mobile {
-          display: none; position: fixed; top: 64px; left: 0; right: 0; z-index: 99;
+          display: flex; position: fixed; top: 64px; left: 0; right: 0; z-index: 99;
           background: rgba(10,10,10,0.97); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
           border-bottom: 1px solid #1e1e1e; flex-direction: column; padding: 0 24px 20px;
+          visibility: hidden; opacity: 0; transform: translateY(-6px);
+          transition: opacity 0.22s ease, transform 0.22s ease, visibility 0s linear 0.22s;
         }
-        .n-mobile.open { display: flex; }
+        .n-mobile.open {
+          visibility: visible; opacity: 1; transform: translateY(0);
+          transition: opacity 0.22s ease, transform 0.22s ease, visibility 0s linear 0s;
+        }
         .n-mlink {
           display: flex; align-items: center; color: #aaa; text-decoration: none;
           font-size: 16px; font-weight: 500; min-height: 52px; border-bottom: 1px solid #1a1a1a;

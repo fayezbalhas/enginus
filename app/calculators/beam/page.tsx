@@ -40,6 +40,7 @@ import {
 type UnitSystem = 'SI' | 'Imperial'
 type DesignCode = 'EC' | 'ACI'
 type SectionCategory = 'manual' | 'steel-si' | 'steel-us' | 'concrete-rect' | 'concrete-tbeam'
+type SupportKind = 'Pin' | 'Roller' | 'Fixed' | 'Free'
 
 type ChartVisibility = ChartLayerOptions & { sfd: boolean; bmd: boolean; deflection: boolean }
 
@@ -131,11 +132,29 @@ function extraDecimals(factor: number): number {
   return factor < 1 ? Math.ceil(-Math.log10(factor)) : 0
 }
 
-const BEAM_TYPES: { value: BeamType; label: string; desc: string }[] = [
-  { value: 'simply-supported', label: 'Simply Supported', desc: 'Pin + roller supports' },
-  { value: 'cantilever', label: 'Cantilever', desc: 'Fixed at A, free at B' },
-  { value: 'fixed-fixed', label: 'Fixed-Fixed', desc: 'Fixed supports at A and B' },
-]
+const SUPPORT_KINDS: SupportKind[] = ['Pin', 'Roller', 'Fixed', 'Free']
+
+function supportsToBeamType(left: SupportKind, right: SupportKind): BeamType {
+  if (left === 'Fixed') {
+    if (right === 'Free') return 'cantilever'
+    if (right === 'Fixed') return 'fixed-fixed'
+    return 'propped-cantilever'
+  }
+  return 'simply-supported'
+}
+
+function beamTypeLabel(type: BeamType): string {
+  switch (type) {
+    case 'simply-supported': return 'Simply Supported'
+    case 'cantilever': return 'Cantilever'
+    case 'fixed-fixed': return 'Fixed-Fixed'
+    case 'propped-cantilever': return 'Propped Cantilever'
+  }
+}
+
+function supportKindToGlyphKey(k: SupportKind): 'pin' | 'roller' | 'fixed' | 'free' {
+  return k.toLowerCase() as 'pin' | 'roller' | 'fixed' | 'free'
+}
 
 function round(value: number, decimals: number): number {
   const f = 10 ** decimals
@@ -327,7 +346,9 @@ function SectionPreview({ section, units }: { section: SectionDef; units: UnitSy
 }
 
 export default function BeamCalculatorPage() {
-  const [beamType, setBeamType] = useState<BeamType>('simply-supported')
+  const [leftSupport, setLeftSupport] = useState<SupportKind>('Pin')
+  const [rightSupport, setRightSupport] = useState<SupportKind>('Roller')
+  const beamType = supportsToBeamType(leftSupport, rightSupport)
   const [code, setCode] = useState<DesignCode>('EC')
   const [units, setUnits] = useState<UnitSystem>('SI')
   const [siSubUnits, setSiSubUnits] = useState<SubUnits>(DEFAULT_SI_SUBUNITS)
@@ -685,15 +706,14 @@ export default function BeamCalculatorPage() {
         }
         .card-title .accent { color: #cc0000; }
 
-        .beam-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        .beam-type-card {
-          background: #0c0c0c; border: 1px solid #1e1e1e; border-radius: 6px; padding: 12px 8px;
-          cursor: pointer; transition: all 0.2s; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px;
-        }
-        .beam-type-card:hover { border-color: #444; }
-        .beam-type-card.active { border-color: #cc0000; background: rgba(204,0,0,0.07); }
-        .beam-type-card .name { font-size: 11px; font-weight: 600; color: #f0f0f0; }
-        .beam-type-card .desc { font-size: 9.5px; color: #555; line-height: 1.3; }
+        .support-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+        .support-slot { display: flex; flex-direction: column; gap: 8px; }
+        .support-slot-label { font-size: 11px; font-weight: 600; color: #f0f0f0; }
+        .support-pos { font-weight: 400; color: #666; margin-left: 6px; font-family: monospace; }
+        .support-btns { display: flex; flex-wrap: wrap; gap: 4px; }
+        .support-btns .filter-btn { padding: 6px 10px; font-size: 11px; }
+        .support-preview { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: #0c0c0c; border: 1px solid #1e1e1e; border-radius: 6px; }
+        .support-preview-label { font-size: 12px; color: #aaa; font-weight: 600; letter-spacing: 0.02em; }
 
         .field { display: flex; flex-direction: column; gap: 6px; }
         .field-label { font-size: 11px; color: #777; font-weight: 500; letter-spacing: 0.02em; }
@@ -824,7 +844,6 @@ export default function BeamCalculatorPage() {
 
         @media (max-width: 900px) {
           .layout-grid { grid-template-columns: 1fr; }
-          .beam-type-grid { grid-template-columns: 1fr; }
           .field-grid.cols-3 { grid-template-columns: 1fr 1fr; }
           .beam-header-section { padding: 32px 20px 20px !important; }
           .beam-main-section { padding: 16px 20px 80px !important; }
@@ -837,10 +856,23 @@ export default function BeamCalculatorPage() {
           .load-row.mom, .load-row-header.mom { grid-template-columns: 1fr; }
           .load-row-header { display: none; }
           .filter-btn { min-height: 44px; padding: 10px 14px; }
-          .field-input, .field-select { min-height: 44px; padding: 12px 10px; }
+          .field-input, .field-select { min-height: 44px; padding: 12px 10px; font-size: 16px; }
           .icon-btn { width: 44px; height: 44px; }
           .btn-add { min-height: 44px; }
-          .beam-type-card { min-height: 64px; }
+          .support-grid { grid-template-columns: 1fr; }
+          .support-btns .filter-btn { min-height: 44px; padding: 10px 14px; font-size: 12px; }
+          .stats-row { grid-template-columns: 1fr 1fr !important; }
+          .chart-header { flex-direction: column; align-items: flex-start; }
+          .chart-extremes { flex-direction: column; gap: 2px; }
+          .toggle-group { flex-wrap: wrap; }
+          h1 { font-size: clamp(22px, 6vw, 44px) !important; }
+        }
+        @media (max-width: 400px) {
+          .beam-header-section { padding: 20px 14px 14px !important; }
+          .beam-main-section { padding: 12px 14px 60px !important; }
+          .card { padding: 16px 14px; }
+          .support-btns .filter-btn { font-size: 11px; padding: 8px 10px; }
+          .layer-toggle { padding: 5px 10px 5px 6px; font-size: 10px; }
         }
       `}</style>
 
@@ -933,15 +965,32 @@ export default function BeamCalculatorPage() {
             </div>
 
             <div className="card">
-              <div className="card-title">Beam Type</div>
-              <div className="beam-type-grid">
-                {BEAM_TYPES.map((bt) => (
-                  <div key={bt.value} className={`beam-type-card${beamType === bt.value ? ' active' : ''}`} onClick={() => setBeamType(bt.value)}>
-                    <BeamTypeIcon type={bt.value} />
-                    <div className="name">{bt.label}</div>
-                    <div className="desc">{bt.desc}</div>
+              <div className="card-title">Support <span className="accent">System</span></div>
+              <div className="support-grid">
+                <div className="support-slot">
+                  <div className="support-slot-label">
+                    Support A <span className="support-pos">x = 0 {du.length}</span>
                   </div>
-                ))}
+                  <div className="support-btns">
+                    {SUPPORT_KINDS.map((k) => (
+                      <button key={k} type="button" className={`filter-btn${leftSupport === k ? ' active' : ''}`} onClick={() => setLeftSupport(k)}>{k}</button>
+                    ))}
+                  </div>
+                </div>
+                <div className="support-slot">
+                  <div className="support-slot-label">
+                    Support B <span className="support-pos">x = {fmt(length, 2)} {du.length}</span>
+                  </div>
+                  <div className="support-btns">
+                    {SUPPORT_KINDS.map((k) => (
+                      <button key={k} type="button" className={`filter-btn${rightSupport === k ? ' active' : ''}`} onClick={() => setRightSupport(k)}>{k}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="support-preview">
+                <SupportPreviewSVG left={leftSupport} right={rightSupport} />
+                <span className="support-preview-label">{beamTypeLabel(beamType)}</span>
               </div>
             </div>
 
@@ -1243,11 +1292,10 @@ export default function BeamCalculatorPage() {
             <div className="card">
               <div className="card-title">Method <span className="accent">&amp; Assumptions</span></div>
               <p className="method-note">
-                Reactions and internal forces follow classical elastic (Euler&ndash;Bernoulli) beam theory &mdash;
-                statics for the simply supported and cantilever cases, and the fixed-end-moment / superposition
-                method for the fixed-fixed case. Deflections assume a constant <b>EI</b> along the span. These
-                results are independent of design code; the code toggle sets the default unit system and the
-                bending-moment sign convention used below.
+                Reactions and internal forces follow classical elastic (Euler&ndash;Bernoulli) beam theory.
+                Simply supported and cantilever cases use direct statics; fixed-fixed uses fixed-end-moment
+                superposition; propped cantilever uses the force method (compatibility at the prop).
+                Deflections assume constant <b>EI</b>. The code toggle sets units and BMD sign convention only.
               </p>
             </div>
           </div>
@@ -1268,6 +1316,8 @@ export default function BeamCalculatorPage() {
               </div>
               <BeamDiagram
                 type={beamType}
+                leftKind={supportKindToGlyphKey(leftSupport)}
+                rightKind={supportKindToGlyphKey(rightSupport)}
                 length={length * lengthFactor}
                 pointLoads={pointLoads.map((p) => ({ ...p, position: p.position * lengthFactor, magnitude: p.magnitude * forceFactor }))}
                 udls={udls.map((uu) => ({ ...uu, start: uu.start * lengthFactor, end: uu.end * lengthFactor }))}
@@ -1293,7 +1343,7 @@ export default function BeamCalculatorPage() {
               <div className="stats-row">
                 <StatBox label="Reaction R_A" value={fmtF(reactions.RA)} unit={du.force} />
                 {beamType !== 'cantilever' && <StatBox label="Reaction R_B" value={fmtF(reactions.RB)} unit={du.force} />}
-                {(beamType === 'cantilever' || beamType === 'fixed-fixed') && (
+                {(beamType === 'cantilever' || beamType === 'fixed-fixed' || beamType === 'propped-cantilever') && (
                   <StatBox label="Moment M_A" value={fmtM(reactions.MA)} unit={du.moment} />
                 )}
                 {beamType === 'fixed-fixed' && <StatBox label="Moment M_B" value={fmtM(reactions.MB)} unit={du.moment} />}
@@ -1489,6 +1539,14 @@ export default function BeamCalculatorPage() {
                         <div>&Sigma;M<sub>A</sub> = 0 &rarr; M_A = &Sigma;(load &times; arm) + &Sigma;M<sub>applied</sub> = {fmtM(reactions.MA)} {du.moment}</div>
                       </>
                     )}
+                    {beamType === 'propped-cantilever' && (
+                      <>
+                        <div>Force method (1&times; indeterminate) &mdash; remove prop at B, solve as cantilever:</div>
+                        <div>&nbsp;&nbsp;R_B = &delta;<sub>cant</sub>(L) &times; 3EI / L&sup3; = {fmtF(reactions.RB)} {du.force}</div>
+                        <div>&Sigma;F_y = 0 &rarr; R_A = W &minus; R_B = {fmtF(reactions.RA)} {du.force}</div>
+                        <div>&Sigma;M<sub>A</sub> = 0 &rarr; M_A = &Sigma;(load &times; arm) &minus; R_B &times; L = {fmtM(reactions.MA)} {du.moment}</div>
+                      </>
+                    )}
                     {beamType === 'fixed-fixed' && (
                       <>
                         <div>Fixed-end moments (superposition over all loads):</div>
@@ -1517,6 +1575,7 @@ export default function BeamCalculatorPage() {
                       Boundary conditions:{' '}
                       {beamType === 'simply-supported' && 'y(0) = 0, y(L) = 0'}
                       {beamType === 'cantilever' && "y(0) = 0, y'(0) = 0"}
+                      {beamType === 'propped-cantilever' && "y(0) = y'(0) = y(L) = 0 — R_B enforces compatibility"}
                       {beamType === 'fixed-fixed' && "y(0) = y'(0) = y(L) = y'(L) = 0 — M_A, M_B already included in M(x)"}
                     </div>
                     <div>
@@ -1549,36 +1608,55 @@ export default function BeamCalculatorPage() {
   )
 }
 
-function BeamTypeIcon({ type }: { type: BeamType }) {
-  const leftFixed = type !== 'simply-supported'
-  const rightFixed = type === 'fixed-fixed'
+function SupportPreviewSVG({ left, right }: { left: SupportKind; right: SupportKind }) {
+  const bY = 20
   return (
-    <svg viewBox="0 0 80 36" width="60" height="27">
-      <line x1="10" y1="14" x2="70" y2="14" stroke="#888" strokeWidth="2.5" strokeLinecap="round" />
-      {leftFixed ? (
+    <svg viewBox="0 0 120 52" width={120} height={52} aria-hidden>
+      <line x1="18" y1={bY} x2="102" y2={bY} stroke="#f0f0f0" strokeWidth="2.5" strokeLinecap="round" />
+      {/* Left support */}
+      {left === 'Pin' && (
         <>
-          <line x1="10" y1="3" x2="10" y2="25" stroke="#cc0000" strokeWidth="3" />
-          {[-1, 0, 1].map((i) => (
-            <line key={i} x1="10" y1={14 + i * 7} x2="3" y2={14 + i * 7 + 7} stroke="#555" strokeWidth="1.5" />
-          ))}
+          <polygon points={`8,${bY + 14} 28,${bY + 14} 18,${bY}`} fill="none" stroke="#cc0000" strokeWidth="1.5" />
+          <line x1="8" y1={bY + 14} x2="28" y2={bY + 14} stroke="#cc0000" strokeWidth="1.5" />
+          {[-1, 0, 1].map(i => <line key={i} x1={11 + i * 6} y1={bY + 14} x2={8 + i * 6} y2={bY + 20} stroke="#555" strokeWidth="1" />)}
         </>
-      ) : (
-        <polygon points="4,28 16,28 10,14" fill="none" stroke="#cc0000" strokeWidth="1.5" />
       )}
-      {rightFixed ? (
+      {left === 'Roller' && (
         <>
-          <line x1="70" y1="3" x2="70" y2="25" stroke="#cc0000" strokeWidth="3" />
-          {[-1, 0, 1].map((i) => (
-            <line key={i} x1="70" y1={14 + i * 7} x2="77" y2={14 + i * 7 + 7} stroke="#555" strokeWidth="1.5" />
-          ))}
+          <polygon points={`8,${bY + 12} 28,${bY + 12} 18,${bY}`} fill="none" stroke="#cc0000" strokeWidth="1.5" />
+          <circle cx="12" cy={bY + 17} r="3" fill="none" stroke="#cc0000" strokeWidth="1.5" />
+          <circle cx="24" cy={bY + 17} r="3" fill="none" stroke="#cc0000" strokeWidth="1.5" />
+          <line x1="6" y1={bY + 21} x2="30" y2={bY + 21} stroke="#cc0000" strokeWidth="1.5" />
         </>
-      ) : type === 'simply-supported' ? (
+      )}
+      {left === 'Fixed' && (
         <>
-          <polygon points="64,26 76,26 70,14" fill="none" stroke="#cc0000" strokeWidth="1.5" />
-          <circle cx="66" cy="30" r="2" fill="none" stroke="#cc0000" strokeWidth="1.5" />
-          <circle cx="74" cy="30" r="2" fill="none" stroke="#cc0000" strokeWidth="1.5" />
+          <line x1="10" y1={bY - 14} x2="10" y2={bY + 14} stroke="#cc0000" strokeWidth="3" />
+          {[-1, 0, 1, 2].map(i => <line key={i} x1="10" y1={bY - 10 + i * 8} x2="3" y2={bY - 4 + i * 8} stroke="#555" strokeWidth="1.5" />)}
         </>
-      ) : null}
+      )}
+      {/* Right support */}
+      {right === 'Pin' && (
+        <>
+          <polygon points={`92,${bY + 14} 112,${bY + 14} 102,${bY}`} fill="none" stroke="#cc0000" strokeWidth="1.5" />
+          <line x1="92" y1={bY + 14} x2="112" y2={bY + 14} stroke="#cc0000" strokeWidth="1.5" />
+          {[-1, 0, 1].map(i => <line key={i} x1={95 + i * 6} y1={bY + 14} x2={92 + i * 6} y2={bY + 20} stroke="#555" strokeWidth="1" />)}
+        </>
+      )}
+      {right === 'Roller' && (
+        <>
+          <polygon points={`92,${bY + 12} 112,${bY + 12} 102,${bY}`} fill="none" stroke="#cc0000" strokeWidth="1.5" />
+          <circle cx="96" cy={bY + 17} r="3" fill="none" stroke="#cc0000" strokeWidth="1.5" />
+          <circle cx="108" cy={bY + 17} r="3" fill="none" stroke="#cc0000" strokeWidth="1.5" />
+          <line x1="90" y1={bY + 21} x2="114" y2={bY + 21} stroke="#cc0000" strokeWidth="1.5" />
+        </>
+      )}
+      {right === 'Fixed' && (
+        <>
+          <line x1="110" y1={bY - 14} x2="110" y2={bY + 14} stroke="#cc0000" strokeWidth="3" />
+          {[-1, 0, 1, 2].map(i => <line key={i} x1="110" y1={bY - 10 + i * 8} x2="117" y2={bY - 4 + i * 8} stroke="#555" strokeWidth="1.5" />)}
+        </>
+      )}
     </svg>
   )
 }

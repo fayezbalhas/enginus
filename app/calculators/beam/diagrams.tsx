@@ -384,6 +384,8 @@ function FixedGlyph({ x, y, side }: { x: number; y: number; side: 'left' | 'righ
 
 export function BeamDiagram({
   type,
+  leftKind: leftKindProp,
+  rightKind: rightKindProp,
   length,
   pointLoads,
   udls,
@@ -398,6 +400,8 @@ export function BeamDiagram({
   layers = DEFAULT_BEAM_LAYERS,
 }: {
   type: BeamType
+  leftKind?: 'pin' | 'roller' | 'fixed' | 'free'
+  rightKind?: 'pin' | 'roller' | 'fixed' | 'free'
   length: number
   pointLoads: PointLoad[]
   udls: UDLLoad[]
@@ -421,8 +425,13 @@ export function BeamDiagram({
   const xScale = (xi: number) => left + (xi / safeLength) * (right - left)
   const showLabels = layers.labels
 
-  const leftKind = type === 'simply-supported' ? 'pin' : 'fixed'
-  const rightKind = type === 'simply-supported' ? 'roller' : type === 'fixed-fixed' ? 'fixed' : 'free'
+  const leftKind = leftKindProp ?? (type === 'simply-supported' ? 'pin' : 'fixed')
+  const rightKind = rightKindProp ?? (
+    type === 'simply-supported' ? 'roller'
+      : type === 'fixed-fixed' ? 'fixed'
+      : type === 'propped-cantilever' ? 'pin'
+      : 'free'
+  )
 
   // Global magnitudes, used to size arrows proportionally within each load category.
   const maxDistMag = Math.max(
@@ -591,7 +600,7 @@ export function BeamDiagram({
   const reactionEls = layers.reactions
     ? (() => {
         const arms: { x: number; R: number; name: string }[] = [{ x: left, R: reactions.RA, name: 'RA' }]
-        if (type === 'simply-supported' || type === 'fixed-fixed') arms.push({ x: right, R: reactions.RB, name: 'RB' })
+        if (type !== 'cantilever') arms.push({ x: right, R: reactions.RB, name: 'RB' })
         return arms.map(({ x: rx, R, name }) => {
           if (Math.abs(R) < 1e-9) return null
           const positive = R >= 0
@@ -663,7 +672,9 @@ export function BeamDiagram({
 
       {/* Supports */}
       {leftKind === 'pin' && <PinGlyph x={left} y={beamY} />}
+      {leftKind === 'roller' && <RollerGlyph x={left} y={beamY} />}
       {leftKind === 'fixed' && <FixedGlyph x={left} y={beamY} side="left" />}
+      {rightKind === 'pin' && <PinGlyph x={right} y={beamY} />}
       {rightKind === 'roller' && <RollerGlyph x={right} y={beamY} />}
       {rightKind === 'fixed' && <FixedGlyph x={right} y={beamY} side="right" />}
 

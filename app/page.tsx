@@ -256,6 +256,16 @@ export default function Home() {
           .home-section-pad { padding-left: 20px !important; padding-right: 20px !important; }
           .home-footer { padding: 36px 20px !important; }
           .step-row { gap: 20px !important; }
+          .cta-inner { padding: 40px 28px !important; }
+        }
+        @media (max-width: 480px) {
+          .stats-grid { grid-template-columns: 1fr 1fr !important; gap: 18px !important; }
+          .hero-pad { padding: 90px 16px 60px !important; }
+          .home-section-pad { padding-left: 16px !important; padding-right: 16px !important; }
+          .step-row { flex-direction: column; gap: 10px !important; padding: 20px 16px !important; }
+          .step-num { font-size: 28px !important; min-width: unset !important; }
+          .cta-inner { padding: 28px 20px !important; }
+          .btn-primary, .btn-secondary { padding: 14px 24px !important; font-size: 14px !important; min-height: 44px; }
         }
       `}</style>
 
@@ -349,17 +359,17 @@ export default function Home() {
                 <circle cx="354" cy="164" r="3" fill="none" stroke="#cc0000" strokeWidth="1.5" />
                 <circle cx="366" cy="164" r="3" fill="none" stroke="#cc0000" strokeWidth="1.5" />
 
-                {/* Load arrows */}
+                <defs>
+                  <marker id="arr-dn" markerWidth="9" markerHeight="9" refX="4.5" refY="9" markerUnits="userSpaceOnUse">
+                    <polygon points="0,0 9,0 4.5,9" fill="#ff4444" />
+                  </marker>
+                </defs>
+                {/* Load arrows – point downward, tip touches beam at y=100 */}
                 {[120, 160, 200, 240, 280].map((x, i) => (
-                  <line key={i} x1={x} y1="55" x2={x} y2="95" stroke="#ff4444" strokeWidth="1.5" markerEnd="url(#arrow)">
+                  <line key={i} x1={x} y1="55" x2={x} y2="100" stroke="#ff4444" strokeWidth="1.5" markerEnd="url(#arr-dn)">
                     <animate attributeName="y1" values="60;55;60" dur="2s" begin={`${i * 0.1}s`} repeatCount="indefinite" />
                   </line>
                 ))}
-                <defs>
-                  <marker id="arrow" markerWidth="6" markerHeight="6" refX="3" refY="5" orient="auto">
-                    <path d="M0,0 L3,5 L6,0" fill="none" stroke="#ff4444" strokeWidth="1" />
-                  </marker>
-                </defs>
 
                 {/* The beam - flexes */}
                 <path fill="none" stroke="#f0f0f0" strokeWidth="3" strokeLinecap="round">
@@ -430,7 +440,7 @@ export default function Home() {
 
         {/* CTA Banner */}
         <section className="home-section-pad" style={{ padding: '100px 48px', position: 'relative', zIndex: 3, background: '#0a0a0a' }}>
-          <div id="cta" data-animate className={`cta-banner fade-up${visible['cta'] ? ' visible' : ''}`} style={{ maxWidth: '1000px', margin: '0 auto', border: '1px solid #1e1e1e', borderLeft: '4px solid #cc0000', borderRadius: '8px', padding: '60px 56px', background: 'linear-gradient(135deg, #0f0f0f, #0a0a0a)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '40px', flexWrap: 'wrap', position: 'relative', overflow: 'hidden' }}>
+          <div id="cta" data-animate className={`cta-banner cta-inner fade-up${visible['cta'] ? ' visible' : ''}`} style={{ maxWidth: '1000px', margin: '0 auto', border: '1px solid #1e1e1e', borderLeft: '4px solid #cc0000', borderRadius: '8px', padding: '60px 56px', background: 'linear-gradient(135deg, #0f0f0f, #0a0a0a)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '40px', flexWrap: 'wrap', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: '-50%', right: '-10%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(204,0,0,0.08), transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ position: 'relative', zIndex: 1 }}>
               <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '30px', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '10px' }}>
