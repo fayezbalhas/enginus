@@ -11,6 +11,7 @@ import {
   DEFAULT_CHART_LAYERS,
   type BeamLayerOptions,
   type ChartLayerOptions,
+  type SupportMarker,
 } from './diagrams'
 import {
   STEEL_SECTIONS,
@@ -41,6 +42,13 @@ type UnitSystem = 'SI' | 'Imperial'
 type DesignCode = 'EC' | 'ACI'
 type SectionCategory = 'manual' | 'steel-si' | 'steel-us' | 'concrete-rect' | 'concrete-tbeam'
 type SupportKind = 'Pin' | 'Roller' | 'Fixed' | 'Free'
+
+interface SupportDef {
+  id: string
+  position: number
+  kind: Exclude<SupportKind, 'Free'>
+}
+const SUPPORT_TYPES: Array<Exclude<SupportKind, 'Free'>> = ['Pin', 'Roller', 'Fixed']
 
 type ChartVisibility = ChartLayerOptions & { sfd: boolean; bmd: boolean; deflection: boolean }
 
@@ -346,9 +354,6 @@ function SectionPreview({ section, units }: { section: SectionDef; units: UnitSy
 }
 
 export default function BeamCalculatorPage() {
-  const [leftSupport, setLeftSupport] = useState<SupportKind>('Pin')
-  const [rightSupport, setRightSupport] = useState<SupportKind>('Roller')
-  const beamType = supportsToBeamType(leftSupport, rightSupport)
   const [code, setCode] = useState<DesignCode>('EC')
   const [units, setUnits] = useState<UnitSystem>('SI')
   const [siSubUnits, setSiSubUnits] = useState<SubUnits>(DEFAULT_SI_SUBUNITS)
@@ -357,6 +362,16 @@ export default function BeamCalculatorPage() {
   const unitsMenuRef = useRef<HTMLDivElement>(null)
 
   const [length, setLength] = useState(6)
+  const [supports, setSupports] = useState<SupportDef[]>([
+    { id: 'sup-1', position: 0, kind: 'Pin' },
+    { id: 'sup-2', position: 6, kind: 'Roller' },
+  ])
+  const supEps = Math.max(length * 1e-4, 1e-6)
+  const leftSup = supports.find(s => s.position < supEps)
+  const rightSup = supports.find(s => Math.abs(s.position - length) < supEps)
+  const leftSupportKind: SupportKind = leftSup?.kind ?? 'Free'
+  const rightSupportKind: SupportKind = rightSup?.kind ?? 'Free'
+  const beamType = supportsToBeamType(leftSupportKind, rightSupportKind)
   const [E, setE] = useState(200)
   const [I, setI] = useState(8360)
 
@@ -486,6 +501,7 @@ export default function BeamCalculatorPage() {
       hf: convert(t.hf, 'dim', toImperial),
       h: convert(t.h, 'dim', toImperial),
     }))
+    setSupports((list) => list.map((s) => ({ ...s, position: convert(s.position, 'length', toImperial) })))
     setUnits(next)
   }
 
@@ -565,6 +581,31 @@ export default function BeamCalculatorPage() {
   }
   function removeMomentLoad(id: string) {
     setMomentLoads((list) => list.filter((m) => m.id !== id))
+  }
+  function addSupport() {
+    setSupports((list) => [...list, { id: nextId('sup'), position: round(length / 2, 2), kind: 'Pin' }])
+  }
+  function removeSupport(id: string) {
+    setSupports((list) => list.filter((s) => s.id !== id))
+  }
+  function updateSupport(id: string, patch: Partial<SupportDef>) {
+    setSupports((list) => list.map((s) => (s.id === id ? { ...s, ...patch } : s)))
+  }
+  function applyPreset(preset: BeamType) {
+    switch (preset) {
+      case 'simply-supported':
+        setSupports([{ id: nextId('sup'), position: 0, kind: 'Pin' }, { id: nextId('sup'), position: round(length, 2), kind: 'Roller' }])
+        break
+      case 'cantilever':
+        setSupports([{ id: nextId('sup'), position: 0, kind: 'Fixed' }])
+        break
+      case 'fixed-fixed':
+        setSupports([{ id: nextId('sup'), position: 0, kind: 'Fixed' }, { id: nextId('sup'), position: round(length, 2), kind: 'Fixed' }])
+        break
+      case 'propped-cantilever':
+        setSupports([{ id: nextId('sup'), position: 0, kind: 'Fixed' }, { id: nextId('sup'), position: round(length, 2), kind: 'Pin' }])
+        break
+    }
   }
 
   function toggleBeamLayer(key: keyof BeamLayerOptions) {
@@ -752,6 +793,10 @@ export default function BeamCalculatorPage() {
         .load-row.udl { grid-template-columns: 1fr 1fr 1fr 1fr 0.7fr auto; }
         .load-row.trap { grid-template-columns: 1fr 1fr 1fr 1fr 1fr 0.7fr auto; }
         .load-row.mom { grid-template-columns: 1fr 1fr 1fr 0.7fr 0.7fr auto; }
+        .load-row-header.sup { grid-template-columns: 1fr 1fr; padding-right: 44px; }
+        .load-row.sup { grid-template-columns: 1fr 1fr auto; }
+
+        .load-cell-label { display: none; }
 
         .icon-btn {
           background: #1a1a1a; border: 1px solid #2a2a2a; color: #888; border-radius: 4px;
@@ -853,8 +898,14 @@ export default function BeamCalculatorPage() {
           .load-row.udl, .load-row-header.udl,
           .load-row.pl, .load-row-header.pl,
           .load-row.trap, .load-row-header.trap,
-          .load-row.mom, .load-row-header.mom { grid-template-columns: 1fr; }
+          .load-row.mom, .load-row-header.mom,
+          .load-row.sup, .load-row-header.sup { grid-template-columns: 1fr; }
           .load-row-header { display: none; }
+          .load-cell-label { display: block; font-size: 11px; color: #777; font-weight: 500; letter-spacing: 0.02em; margin-bottom: 4px; }
+          .unit-ref-grid { grid-template-columns: 1fr 1fr !important; gap: 10px; }
+          .unit-ref-label { font-size: 11px !important; }
+          .unit-ref-value { font-size: 15px !important; }
+          .unit-ref-grid > div { padding: 10px 12px; }
           .filter-btn { min-height: 44px; padding: 10px 14px; }
           .field-input, .field-select { min-height: 44px; padding: 12px 10px; font-size: 16px; }
           .icon-btn { width: 44px; height: 44px; }
@@ -966,30 +1017,39 @@ export default function BeamCalculatorPage() {
 
             <div className="card">
               <div className="card-title">Support <span className="accent">System</span></div>
-              <div className="support-grid">
-                <div className="support-slot">
-                  <div className="support-slot-label">
-                    Support A <span className="support-pos">x = 0 {du.length}</span>
-                  </div>
-                  <div className="support-btns">
-                    {SUPPORT_KINDS.map((k) => (
-                      <button key={k} type="button" className={`filter-btn${leftSupport === k ? ' active' : ''}`} onClick={() => setLeftSupport(k)}>{k}</button>
-                    ))}
-                  </div>
-                </div>
-                <div className="support-slot">
-                  <div className="support-slot-label">
-                    Support B <span className="support-pos">x = {fmt(length, 2)} {du.length}</span>
-                  </div>
-                  <div className="support-btns">
-                    {SUPPORT_KINDS.map((k) => (
-                      <button key={k} type="button" className={`filter-btn${rightSupport === k ? ' active' : ''}`} onClick={() => setRightSupport(k)}>{k}</button>
-                    ))}
-                  </div>
-                </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+                <button type="button" className={`filter-btn${beamType === 'simply-supported' ? ' active' : ''}`} onClick={() => applyPreset('simply-supported')}>Simply Supported</button>
+                <button type="button" className={`filter-btn${beamType === 'cantilever' ? ' active' : ''}`} onClick={() => applyPreset('cantilever')}>Cantilever</button>
+                <button type="button" className={`filter-btn${beamType === 'fixed-fixed' ? ' active' : ''}`} onClick={() => applyPreset('fixed-fixed')}>Fixed-Fixed</button>
+                <button type="button" className={`filter-btn${beamType === 'propped-cantilever' ? ' active' : ''}`} onClick={() => applyPreset('propped-cantilever')}>Propped Cantilever</button>
               </div>
-              <div className="support-preview">
-                <SupportPreviewSVG left={leftSupport} right={rightSupport} />
+              <div className="load-row-header sup">
+                <span>Position ({u.length})</span>
+                <span>Type</span>
+              </div>
+              {supports.map((s) => (
+                <div className="load-row sup" key={s.id}>
+                  <div>
+                    <span className="load-cell-label">Position ({u.length})</span>
+                    <input className="field-input" type="number" step="any" min={0} max={length} value={s.position}
+                      onChange={(e) => updateSupport(s.id, { position: Number(e.target.value) })} />
+                  </div>
+                  <div>
+                    <span className="load-cell-label">Type</span>
+                    <div className="support-btns">
+                      {SUPPORT_TYPES.map((k) => (
+                        <button key={k} type="button" className={`filter-btn${s.kind === k ? ' active' : ''}`}
+                          onClick={() => updateSupport(s.id, { kind: k })}>{k}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <button className="icon-btn" onClick={() => removeSupport(s.id)} aria-label="Remove support">&times;</button>
+                </div>
+              ))}
+              {supports.length === 0 && <div className="empty-note">No supports (free beam).</div>}
+              <button className="btn-add" onClick={addSupport}>+ Add support</button>
+              <div className="support-preview" style={{ marginTop: 14 }}>
+                <SupportPreviewSVG left={leftSupportKind} right={rightSupportKind} />
                 <span className="support-preview-label">{beamTypeLabel(beamType)}</span>
               </div>
             </div>
@@ -1136,17 +1196,17 @@ export default function BeamCalculatorPage() {
                 </div>
                 {pointLoads.map((p) => (
                   <div className="load-row pl" key={p.id}>
-                    <input className="field-input" type="text" value={p.label} onChange={(e) => updatePointLoad(p.id, { label: e.target.value })} />
-                    <input className="field-input" type="number" step="any" min={0} max={length} value={p.position}
-                      onChange={(e) => updatePointLoad(p.id, { position: Number(e.target.value) })} />
-                    <input className="field-input" type="number" step="any" value={p.magnitude}
-                      onChange={(e) => updatePointLoad(p.id, { magnitude: Number(e.target.value) })} />
-                    <select className="field-select" value={p.loadType} onChange={(e) => updatePointLoad(p.id, { loadType: e.target.value as PointLoad['loadType'] })}>
+                    <div><span className="load-cell-label">Label</span><input className="field-input" type="text" value={p.label} onChange={(e) => updatePointLoad(p.id, { label: e.target.value })} /></div>
+                    <div><span className="load-cell-label">Position ({u.length})</span><input className="field-input" type="number" step="any" min={0} max={length} value={p.position}
+                      onChange={(e) => updatePointLoad(p.id, { position: Number(e.target.value) })} /></div>
+                    <div><span className="load-cell-label">Force ({u.force})</span><input className="field-input" type="number" step="any" value={p.magnitude}
+                      onChange={(e) => updatePointLoad(p.id, { magnitude: Number(e.target.value) })} /></div>
+                    <div><span className="load-cell-label">Type</span><select className="field-select" value={p.loadType} onChange={(e) => updatePointLoad(p.id, { loadType: e.target.value as PointLoad['loadType'] })}>
                       <option value="G">G</option>
                       <option value="Q">Q</option>
                       <option value="W">W</option>
                       <option value="S">S</option>
-                    </select>
+                    </select></div>
                     <button className="icon-btn" onClick={() => removePointLoad(p.id)} aria-label="Remove point load">&times;</button>
                   </div>
                 ))}
@@ -1164,19 +1224,19 @@ export default function BeamCalculatorPage() {
                 </div>
                 {udls.map((uu) => (
                   <div className="load-row udl" key={uu.id}>
-                    <input className="field-input" type="text" value={uu.label} onChange={(e) => updateUdl(uu.id, { label: e.target.value })} />
-                    <input className="field-input" type="number" step="any" min={0} max={length} value={uu.start}
-                      onChange={(e) => updateUdl(uu.id, { start: Number(e.target.value) })} />
-                    <input className="field-input" type="number" step="any" min={0} max={length} value={uu.end}
-                      onChange={(e) => updateUdl(uu.id, { end: Number(e.target.value) })} />
-                    <input className="field-input" type="number" step="any" value={uu.magnitude}
-                      onChange={(e) => updateUdl(uu.id, { magnitude: Number(e.target.value) })} />
-                    <select className="field-select" value={uu.loadType} onChange={(e) => updateUdl(uu.id, { loadType: e.target.value as UDLLoad['loadType'] })}>
+                    <div><span className="load-cell-label">Label</span><input className="field-input" type="text" value={uu.label} onChange={(e) => updateUdl(uu.id, { label: e.target.value })} /></div>
+                    <div><span className="load-cell-label">Start ({u.length})</span><input className="field-input" type="number" step="any" min={0} max={length} value={uu.start}
+                      onChange={(e) => updateUdl(uu.id, { start: Number(e.target.value) })} /></div>
+                    <div><span className="load-cell-label">End ({u.length})</span><input className="field-input" type="number" step="any" min={0} max={length} value={uu.end}
+                      onChange={(e) => updateUdl(uu.id, { end: Number(e.target.value) })} /></div>
+                    <div><span className="load-cell-label">Load ({u.udl})</span><input className="field-input" type="number" step="any" value={uu.magnitude}
+                      onChange={(e) => updateUdl(uu.id, { magnitude: Number(e.target.value) })} /></div>
+                    <div><span className="load-cell-label">Type</span><select className="field-select" value={uu.loadType} onChange={(e) => updateUdl(uu.id, { loadType: e.target.value as UDLLoad['loadType'] })}>
                       <option value="G">G</option>
                       <option value="Q">Q</option>
                       <option value="W">W</option>
                       <option value="S">S</option>
-                    </select>
+                    </select></div>
                     <button className="icon-btn" onClick={() => removeUdl(uu.id)} aria-label="Remove distributed load">&times;</button>
                   </div>
                 ))}
@@ -1195,21 +1255,21 @@ export default function BeamCalculatorPage() {
                 </div>
                 {trapezoidalLoads.map((t) => (
                   <div className="load-row trap" key={t.id}>
-                    <input className="field-input" type="text" value={t.label} onChange={(e) => updateTrapezoidal(t.id, { label: e.target.value })} />
-                    <input className="field-input" type="number" step="any" min={0} max={length} value={t.start}
-                      onChange={(e) => updateTrapezoidal(t.id, { start: Number(e.target.value) })} />
-                    <input className="field-input" type="number" step="any" min={0} max={length} value={t.end}
-                      onChange={(e) => updateTrapezoidal(t.id, { end: Number(e.target.value) })} />
-                    <input className="field-input" type="number" step="any" value={t.startMag}
-                      onChange={(e) => updateTrapezoidal(t.id, { startMag: Number(e.target.value) })} />
-                    <input className="field-input" type="number" step="any" value={t.endMag}
-                      onChange={(e) => updateTrapezoidal(t.id, { endMag: Number(e.target.value) })} />
-                    <select className="field-select" value={t.loadType} onChange={(e) => updateTrapezoidal(t.id, { loadType: e.target.value as TrapezoidalLoad['loadType'] })}>
+                    <div><span className="load-cell-label">Label</span><input className="field-input" type="text" value={t.label} onChange={(e) => updateTrapezoidal(t.id, { label: e.target.value })} /></div>
+                    <div><span className="load-cell-label">Start ({u.length})</span><input className="field-input" type="number" step="any" min={0} max={length} value={t.start}
+                      onChange={(e) => updateTrapezoidal(t.id, { start: Number(e.target.value) })} /></div>
+                    <div><span className="load-cell-label">End ({u.length})</span><input className="field-input" type="number" step="any" min={0} max={length} value={t.end}
+                      onChange={(e) => updateTrapezoidal(t.id, { end: Number(e.target.value) })} /></div>
+                    <div><span className="load-cell-label">w start ({u.udl})</span><input className="field-input" type="number" step="any" value={t.startMag}
+                      onChange={(e) => updateTrapezoidal(t.id, { startMag: Number(e.target.value) })} /></div>
+                    <div><span className="load-cell-label">w end ({u.udl})</span><input className="field-input" type="number" step="any" value={t.endMag}
+                      onChange={(e) => updateTrapezoidal(t.id, { endMag: Number(e.target.value) })} /></div>
+                    <div><span className="load-cell-label">Type</span><select className="field-select" value={t.loadType} onChange={(e) => updateTrapezoidal(t.id, { loadType: e.target.value as TrapezoidalLoad['loadType'] })}>
                       <option value="G">G</option>
                       <option value="Q">Q</option>
                       <option value="W">W</option>
                       <option value="S">S</option>
-                    </select>
+                    </select></div>
                     <button className="icon-btn" onClick={() => removeTrapezoidal(t.id)} aria-label="Remove trapezoidal load">&times;</button>
                   </div>
                 ))}
@@ -1227,21 +1287,21 @@ export default function BeamCalculatorPage() {
                 </div>
                 {momentLoads.map((m) => (
                   <div className="load-row mom" key={m.id}>
-                    <input className="field-input" type="text" value={m.label} onChange={(e) => updateMomentLoad(m.id, { label: e.target.value })} />
-                    <input className="field-input" type="number" step="any" min={0} max={length} value={m.position}
-                      onChange={(e) => updateMomentLoad(m.id, { position: Number(e.target.value) })} />
-                    <input className="field-input" type="number" step="any" value={m.magnitude}
-                      onChange={(e) => updateMomentLoad(m.id, { magnitude: Number(e.target.value) })} />
-                    <select className="field-select" value={m.direction} onChange={(e) => updateMomentLoad(m.id, { direction: e.target.value as MomentLoad['direction'] })}>
+                    <div><span className="load-cell-label">Label</span><input className="field-input" type="text" value={m.label} onChange={(e) => updateMomentLoad(m.id, { label: e.target.value })} /></div>
+                    <div><span className="load-cell-label">Position ({u.length})</span><input className="field-input" type="number" step="any" min={0} max={length} value={m.position}
+                      onChange={(e) => updateMomentLoad(m.id, { position: Number(e.target.value) })} /></div>
+                    <div><span className="load-cell-label">Moment ({u.moment})</span><input className="field-input" type="number" step="any" value={m.magnitude}
+                      onChange={(e) => updateMomentLoad(m.id, { magnitude: Number(e.target.value) })} /></div>
+                    <div><span className="load-cell-label">Direction</span><select className="field-select" value={m.direction} onChange={(e) => updateMomentLoad(m.id, { direction: e.target.value as MomentLoad['direction'] })}>
                       <option value="CCW">CCW</option>
                       <option value="CW">CW</option>
-                    </select>
-                    <select className="field-select" value={m.loadType} onChange={(e) => updateMomentLoad(m.id, { loadType: e.target.value as MomentLoad['loadType'] })}>
+                    </select></div>
+                    <div><span className="load-cell-label">Type</span><select className="field-select" value={m.loadType} onChange={(e) => updateMomentLoad(m.id, { loadType: e.target.value as MomentLoad['loadType'] })}>
                       <option value="G">G</option>
                       <option value="Q">Q</option>
                       <option value="W">W</option>
                       <option value="S">S</option>
-                    </select>
+                    </select></div>
                     <button className="icon-btn" onClick={() => removeMomentLoad(m.id)} aria-label="Remove moment load">&times;</button>
                   </div>
                 ))}
@@ -1316,8 +1376,9 @@ export default function BeamCalculatorPage() {
               </div>
               <BeamDiagram
                 type={beamType}
-                leftKind={supportKindToGlyphKey(leftSupport)}
-                rightKind={supportKindToGlyphKey(rightSupport)}
+                leftKind={supportKindToGlyphKey(leftSupportKind)}
+                rightKind={supportKindToGlyphKey(rightSupportKind)}
+                supports={supports.map((s) => ({ position: s.position * lengthFactor, kind: s.kind.toLowerCase() as SupportMarker['kind'] }))}
                 length={length * lengthFactor}
                 pointLoads={pointLoads.map((p) => ({ ...p, position: p.position * lengthFactor, magnitude: p.magnitude * forceFactor }))}
                 udls={udls.map((uu) => ({ ...uu, start: uu.start * lengthFactor, end: uu.end * lengthFactor }))}

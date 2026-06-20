@@ -74,6 +74,11 @@ export const DEFAULT_BEAM_LAYERS: BeamLayerOptions = {
   labels: true,
 }
 
+export interface SupportMarker {
+  position: number
+  kind: 'pin' | 'roller' | 'fixed'
+}
+
 export interface ChartLayerOptions {
   grid: boolean
   keyPoints: boolean
@@ -386,6 +391,7 @@ export function BeamDiagram({
   type,
   leftKind: leftKindProp,
   rightKind: rightKindProp,
+  supports: supportsProp,
   length,
   pointLoads,
   udls,
@@ -402,6 +408,7 @@ export function BeamDiagram({
   type: BeamType
   leftKind?: 'pin' | 'roller' | 'fixed' | 'free'
   rightKind?: 'pin' | 'roller' | 'fixed' | 'free'
+  supports?: SupportMarker[]
   length: number
   pointLoads: PointLoad[]
   udls: UDLLoad[]
@@ -671,12 +678,26 @@ export function BeamDiagram({
       <line x1={left} x2={right} y1={beamY} y2={beamY} stroke="#f0f0f0" strokeWidth={4} strokeLinecap="round" />
 
       {/* Supports */}
-      {leftKind === 'pin' && <PinGlyph x={left} y={beamY} />}
-      {leftKind === 'roller' && <RollerGlyph x={left} y={beamY} />}
-      {leftKind === 'fixed' && <FixedGlyph x={left} y={beamY} side="left" />}
-      {rightKind === 'pin' && <PinGlyph x={right} y={beamY} />}
-      {rightKind === 'roller' && <RollerGlyph x={right} y={beamY} />}
-      {rightKind === 'fixed' && <FixedGlyph x={right} y={beamY} side="right" />}
+      {supportsProp ? supportsProp.map((s, i) => {
+        const sx = xScale(clamp(s.position, 0, length))
+        const side = sx <= (left + right) / 2 ? 'left' : 'right'
+        return (
+          <g key={`sup-${i}`}>
+            {s.kind === 'pin' && <PinGlyph x={sx} y={beamY} />}
+            {s.kind === 'roller' && <RollerGlyph x={sx} y={beamY} />}
+            {s.kind === 'fixed' && <FixedGlyph x={sx} y={beamY} side={side} />}
+          </g>
+        )
+      }) : (
+        <>
+          {leftKind === 'pin' && <PinGlyph x={left} y={beamY} />}
+          {leftKind === 'roller' && <RollerGlyph x={left} y={beamY} />}
+          {leftKind === 'fixed' && <FixedGlyph x={left} y={beamY} side="left" />}
+          {rightKind === 'pin' && <PinGlyph x={right} y={beamY} />}
+          {rightKind === 'roller' && <RollerGlyph x={right} y={beamY} />}
+          {rightKind === 'fixed' && <FixedGlyph x={right} y={beamY} side="right" />}
+        </>
+      )}
 
       {udlEls}
       {trapEls}
