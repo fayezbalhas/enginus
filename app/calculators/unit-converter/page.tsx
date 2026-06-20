@@ -398,6 +398,10 @@ export default function UnitConverterPage() {
         .pk-close:hover{border-color:#cc0000;color:#ff4444}
 
         .pk-body{display:flex;flex:1;overflow:hidden;min-height:0}
+        .pk-cats,.pk-units{scrollbar-width:thin;scrollbar-color:#333 #0a0a0a}
+        .pk-cats::-webkit-scrollbar,.pk-units::-webkit-scrollbar{width:4px}
+        .pk-cats::-webkit-scrollbar-track,.pk-units::-webkit-scrollbar-track{background:#0a0a0a}
+        .pk-cats::-webkit-scrollbar-thumb,.pk-units::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
         .pk-cats{width:200px;border-right:1px solid #1e1e1e;overflow-y:auto;flex-shrink:0;padding:8px 0}
         .pk-cat-btn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 16px;background:none;
           border:none;color:#888;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;
