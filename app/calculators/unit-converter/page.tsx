@@ -386,7 +386,7 @@ export default function UnitConverterPage() {
         /* Picker overlay */
         .pk-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.7);display:flex;
           align-items:center;justify-content:center;padding:20px}
-        .pk-panel{background:#111;border:1px solid #2a2a2a;border-radius:16px;width:100%;max-width:700px;
+        .pk-panel{background:#111;border:1px solid #1e1e1e;border-radius:16px;width:100%;max-width:700px;
           max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6)}
         .pk-top{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid #1e1e1e}
         .pk-search{flex:1;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;color:#f0f0f0;
