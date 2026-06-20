@@ -314,7 +314,7 @@ export default function Home() {
 
             <div className="hero-stagger d4" style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <a href="/calculators" className="btn-primary">Explore Free Tools</a>
-              <a href="/templates" className="btn-secondary">View Templates &rarr;</a>
+              <a href="/pro" className="btn-secondary">View Pro Tools &rarr;</a>
             </div>
           </div>
 
@@ -460,7 +460,7 @@ export default function Home() {
           <div style={{ fontSize: '13px', color: '#444' }}>&copy; 2025 Enginus. Built for engineers.</div>
           <div style={{ display: 'flex', gap: '24px' }}>
             <a href="/calculators" className="nav-link" style={{ fontSize: '13px' }}>Calculators</a>
-            <a href="/templates" className="nav-link" style={{ fontSize: '13px' }}>Templates</a>
+            <a href="/pro" className="nav-link" style={{ fontSize: '13px' }}>Pro Tools</a>
             <a href="/about" className="nav-link" style={{ fontSize: '13px' }}>About</a>
           </div>
         </footer>

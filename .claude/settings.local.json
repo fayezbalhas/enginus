@@ -68,7 +68,8 @@
       "Bash(npm run *)",
       "Bash(xargs grep -li \"icon\")",
       "Bash(git push *)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(git mv *)"
     ]
   }
 }

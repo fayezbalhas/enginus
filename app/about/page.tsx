@@ -181,7 +181,7 @@ export default function AboutPage() {
         <div style={{ fontSize: '13px', color: '#444' }}>&copy; 2025 Enginus. Built for engineers.</div>
         <div style={{ display: 'flex', gap: '24px' }}>
           <a href="/calculators" className="nav-link" style={{ fontSize: '13px' }}>Calculators</a>
-          <a href="/templates" className="nav-link" style={{ fontSize: '13px' }}>Templates</a>
+          <a href="/pro" className="nav-link" style={{ fontSize: '13px' }}>Pro Tools</a>
           <a href="/about" className="nav-link" style={{ fontSize: '13px' }}>About</a>
         </div>
       </footer>

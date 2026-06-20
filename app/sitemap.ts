@@ -7,7 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: 'https://enginus.org/calculators/beam', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
     { url: 'https://enginus.org/calculators/unit-converter', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
     { url: 'https://enginus.org/calculators/rebar', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
-    { url: 'https://enginus.org/templates', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
+    { url: 'https://enginus.org/pro', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
     { url: 'https://enginus.org/about', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
   ]
 }

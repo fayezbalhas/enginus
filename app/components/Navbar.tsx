@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 
-type ActivePage = 'calculators' | 'templates' | 'about' | null
+type ActivePage = 'calculators' | 'pro' | 'about' | null
 
 export default function Navbar({
   fixed = false,
@@ -125,9 +125,9 @@ export default function Navbar({
 
         <div className="n-links">
           <a href="/calculators" className={`n-link${activePage === 'calculators' ? ' cur' : ''}`}>Calculators</a>
-          <a href="/templates" className={`n-link${activePage === 'templates' ? ' cur' : ''}`}>Templates</a>
+          <a href="/pro" className={`n-link${activePage === 'pro' ? ' cur' : ''}`}>Pro Tools</a>
           <a href="/about" className={`n-link${activePage === 'about' ? ' cur' : ''}`}>About</a>
-          <a href="/templates" className="n-btn">Get Templates</a>
+          <a href="/pro" className="n-btn">Get Pro Tools</a>
         </div>
 
         <button
@@ -144,9 +144,9 @@ export default function Navbar({
 
       <div className={`n-mobile${open ? ' open' : ''}`}>
         <a href="/calculators" className={`n-mlink${activePage === 'calculators' ? ' cur' : ''}`} onClick={() => setOpen(false)}>Calculators</a>
-        <a href="/templates" className={`n-mlink${activePage === 'templates' ? ' cur' : ''}`} onClick={() => setOpen(false)}>Templates</a>
+        <a href="/pro" className={`n-mlink${activePage === 'pro' ? ' cur' : ''}`} onClick={() => setOpen(false)}>Pro Tools</a>
         <a href="/about" className={`n-mlink${activePage === 'about' ? ' cur' : ''}`} onClick={() => setOpen(false)}>About</a>
-        <a href="/templates" className="n-mcta" onClick={() => setOpen(false)}>Get Templates</a>
+        <a href="/pro" className="n-mcta" onClick={() => setOpen(false)}>Get Pro Tools</a>
       </div>
     </>
   )
