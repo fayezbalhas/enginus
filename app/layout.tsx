@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   title: "Enginus | Structural Engineering Tools",
   description:
     "Free online structural calculators and professional Excel templates for civil and structural engineers. Supports Eurocode and ACI in both SI and Imperial units.",
+  other: {
+    "google-adsense-account": "ca-pub-4165660927287862",
+  },
 };
 
 export default function RootLayout({
