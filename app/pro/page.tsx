@@ -222,7 +222,7 @@ export default function ProPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '36px', flex: 1 }}>
               {freePlan.features.map((f, i) => (
                 <div key={i} className="feature-row">
-                  <span className="check-icon">&check;</span>
+                  <span className="check-icon">✓</span>
                   <span className="feature-text">{f}</span>
                 </div>
               ))}
@@ -249,7 +249,7 @@ export default function ProPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '36px', flex: 1 }}>
               {proPlan.features.map((f, i) => (
                 <div key={i} className="feature-row">
-                  <span className="check-icon">&check;</span>
+                  <span className="check-icon">✓</span>
                   <span className="feature-text" style={i === 0 ? { color: '#ccc', fontWeight: 500 } : undefined}>{f}</span>
                 </div>
               ))}
