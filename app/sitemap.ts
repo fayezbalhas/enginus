@@ -1,0 +1,13 @@
+import { MetadataRoute } from 'next'
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [
+    { url: 'https://enginus.org', lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
+    { url: 'https://enginus.org/calculators', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
+    { url: 'https://enginus.org/calculators/beam', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
+    { url: 'https://enginus.org/calculators/unit-converter', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
+    { url: 'https://enginus.org/calculators/rebar', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
+    { url: 'https://enginus.org/templates', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
+    { url: 'https://enginus.org/about', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
+  ]
+}
