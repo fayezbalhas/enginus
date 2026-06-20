@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createClient } from '../../lib/supabase'
+import type { User } from '@supabase/supabase-js'
 
 type ActivePage = 'calculators' | 'pro' | 'about' | null
 
@@ -13,6 +15,18 @@ export default function Navbar({
 }) {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => setUser(data.user))
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   useEffect(() => {
     if (!fixed) return
@@ -26,6 +40,12 @@ export default function Navbar({
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
+
+  const handleSignOut = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    window.location.href = '/'
+  }
 
   const bg = fixed
     ? (scrolled ? 'rgba(10,10,10,0.85)' : 'transparent')
@@ -57,6 +77,24 @@ export default function Navbar({
           white-space: nowrap; display: inline-block;
         }
         .n-btn:hover { background: #e60000; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(204,0,0,0.35); }
+
+        .n-sign-in {
+          color: #888; text-decoration: none; font-size: 13px; font-weight: 500;
+          padding: 10px 22px; border: 1px solid #333; border-radius: 4px;
+          transition: all 0.2s; white-space: nowrap; display: inline-block;
+        }
+        .n-sign-in:hover { border-color: #cc0000; color: #f0f0f0; }
+
+        .n-user-email {
+          font-size: 12px; color: #666; max-width: 140px; overflow: hidden;
+          text-overflow: ellipsis; white-space: nowrap;
+        }
+        .n-sign-out {
+          background: none; border: 1px solid #333; color: #888; padding: 8px 16px;
+          font-size: 12px; font-weight: 500; border-radius: 4px; cursor: pointer;
+          transition: all 0.2s; font-family: 'Inter', sans-serif; white-space: nowrap;
+        }
+        .n-sign-out:hover { border-color: #cc0000; color: #f0f0f0; }
 
         .n-burger {
           display: none; flex-direction: column; justify-content: center; align-items: center;
@@ -92,6 +130,13 @@ export default function Navbar({
           font-weight: 600; border-radius: 4px; margin-top: 16px; transition: background 0.2s;
         }
         .n-mcta:hover { background: #e60000; }
+        .n-msign-out {
+          display: flex; align-items: center; justify-content: center; min-height: 52px;
+          background: none; color: #aaa; border: 1px solid #333; font-size: 15px;
+          font-weight: 500; border-radius: 4px; margin-top: 8px; cursor: pointer;
+          transition: all 0.2s; font-family: 'Inter', sans-serif; width: 100%;
+        }
+        .n-msign-out:hover { border-color: #cc0000; color: #f0f0f0; }
 
         @media (max-width: 767px) {
           .n-nav { padding: 0 20px; }
@@ -127,7 +172,17 @@ export default function Navbar({
           <a href="/calculators" className={`n-link${activePage === 'calculators' ? ' cur' : ''}`}>Calculators</a>
           <a href="/pro" className={`n-link${activePage === 'pro' ? ' cur' : ''}`}>Pro Tools</a>
           <a href="/about" className={`n-link${activePage === 'about' ? ' cur' : ''}`}>About</a>
-          <a href="/pro" className="n-btn">Get Pro Tools</a>
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <span className="n-user-email">{user.email}</span>
+              <button onClick={handleSignOut} className="n-sign-out">Sign Out</button>
+            </div>
+          ) : (
+            <>
+              <a href="/sign-in" className="n-sign-in">Sign In</a>
+              <a href="/pro" className="n-btn">Go Pro</a>
+            </>
+          )}
         </div>
 
         <button
@@ -146,7 +201,19 @@ export default function Navbar({
         <a href="/calculators" className={`n-mlink${activePage === 'calculators' ? ' cur' : ''}`} onClick={() => setOpen(false)}>Calculators</a>
         <a href="/pro" className={`n-mlink${activePage === 'pro' ? ' cur' : ''}`} onClick={() => setOpen(false)}>Pro Tools</a>
         <a href="/about" className={`n-mlink${activePage === 'about' ? ' cur' : ''}`} onClick={() => setOpen(false)}>About</a>
-        <a href="/pro" className="n-mcta" onClick={() => setOpen(false)}>Get Pro Tools</a>
+        {user ? (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', minHeight: '52px', borderBottom: '1px solid #1a1a1a', padding: '0 4px', fontSize: '14px', color: '#666' }}>
+              {user.email}
+            </div>
+            <button onClick={() => { handleSignOut(); setOpen(false) }} className="n-msign-out">Sign Out</button>
+          </>
+        ) : (
+          <>
+            <a href="/sign-in" className="n-mlink" onClick={() => setOpen(false)}>Sign In</a>
+            <a href="/pro" className="n-mcta" onClick={() => setOpen(false)}>Go Pro</a>
+          </>
+        )}
       </div>
     </>
   )
