@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import Navbar from '../components/Navbar'
 
 export default function SignUpPage() {
@@ -28,7 +28,6 @@ export default function SignUpPage() {
 
     setLoading(true)
 
-    const supabase = createClient()
     const { error } = await supabase.auth.signUp({
       email,
       password,

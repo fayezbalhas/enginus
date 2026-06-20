@@ -69,7 +69,12 @@
       "Bash(xargs grep -li \"icon\")",
       "Bash(git push *)",
       "Bash(npm install *)",
-      "Bash(git mv *)"
+      "Bash(git mv *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git check-ignore *)",
+      "Bash(netstat -ano)",
+      "Bash(vercel env *)"
     ]
   }
 }

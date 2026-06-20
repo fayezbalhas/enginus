@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
 type ActivePage = 'calculators' | 'pro' | 'about' | null
@@ -18,7 +18,6 @@ export default function Navbar({
   const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
-    const supabase = createClient()
     supabase.auth.getUser().then(({ data }) => setUser(data.user))
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -42,7 +41,6 @@ export default function Navbar({
   }, [])
 
   const handleSignOut = async () => {
-    const supabase = createClient()
     await supabase.auth.signOut()
     window.location.href = '/'
   }
