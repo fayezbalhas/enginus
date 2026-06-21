@@ -136,8 +136,8 @@ export default function Home() {
       y: Math.random() * h,
       vx: (Math.random() - 0.5) * 0.3,
       vy: (Math.random() - 0.5) * 0.3,
-      size: 40 + Math.random() * 40,
-      opacity: 0.15 + Math.random() * 0.10,
+      size: 45 + Math.random() * 45,
+      opacity: 0.22 + Math.random() * 0.12,
       rotation: Math.random() * Math.PI * 2,
       rotSpeed: (Math.random() - 0.5) * 0.003,
       type: Math.floor(Math.random() * 16),
@@ -169,7 +169,7 @@ export default function Home() {
         ctx.globalAlpha = sh.opacity
         ctx.strokeStyle = '#cc0000'
         ctx.fillStyle = '#cc0000'
-        ctx.lineWidth = 1.8
+        ctx.lineWidth = 2.2
         drawShape(ctx, sh.type, sh.size)
         ctx.restore()
       })
