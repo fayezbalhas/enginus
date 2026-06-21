@@ -136,13 +136,15 @@ export default function Home() {
       y: Math.random() * h,
       vx: (Math.random() - 0.5) * 0.3,
       vy: (Math.random() - 0.5) * 0.3,
-      size: 22 + Math.random() * 30,
-      opacity: 0.06 + Math.random() * 0.04,
+      size: 40 + Math.random() * 40,
+      opacity: 0.15 + Math.random() * 0.10,
       rotation: Math.random() * Math.PI * 2,
       rotSpeed: (Math.random() - 0.5) * 0.003,
       type: Math.floor(Math.random() * 16),
       parallaxFactor: 0.3 + Math.random() * 0.7,
     }))
+
+    console.log('[Enginus] Floating shapes animation started —', SHAPE_COUNT, 'shapes')
 
     const draw = () => {
       ctx.clearRect(0, 0, w, h)
@@ -167,7 +169,7 @@ export default function Home() {
         ctx.globalAlpha = sh.opacity
         ctx.strokeStyle = '#cc0000'
         ctx.fillStyle = '#cc0000'
-        ctx.lineWidth = 1.2
+        ctx.lineWidth = 1.8
         drawShape(ctx, sh.type, sh.size)
         ctx.restore()
       })
