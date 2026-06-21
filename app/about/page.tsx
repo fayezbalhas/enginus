@@ -174,15 +174,25 @@ export default function AboutPage() {
       </section>
 
       {/* Footer */}
-      <footer className="about-footer" style={{ borderTop: '1px solid #1a1a1a', padding: '44px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-        <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '16px', fontWeight: 700, letterSpacing: '-0.01em' }}>
-          ENGI<span style={{ color: '#cc0000' }}>NUS</span>
-        </div>
-        <div style={{ fontSize: '13px', color: '#444' }}>&copy; 2025 Enginus. Built for engineers.</div>
-        <div style={{ display: 'flex', gap: '24px' }}>
-          <a href="/calculators" className="nav-link" style={{ fontSize: '13px' }}>Calculators</a>
-          <a href="/pro" className="nav-link" style={{ fontSize: '13px' }}>Pro Tools</a>
-          <a href="/about" className="nav-link" style={{ fontSize: '13px' }}>About</a>
+      <footer className="about-footer" style={{ borderTop: '1px solid #1a1a1a', padding: '44px 48px' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
+            <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '16px', fontWeight: 700, letterSpacing: '-0.01em' }}>
+              ENGI<span style={{ color: '#cc0000' }}>NUS</span>
+            </div>
+            <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+              <a href="/calculators" className="nav-link" style={{ fontSize: '13px' }}>Calculators</a>
+              <a href="/pro" className="nav-link" style={{ fontSize: '13px' }}>Pro Tools</a>
+              <a href="/about" className="nav-link" style={{ fontSize: '13px' }}>About</a>
+              <a href="/privacy" className="nav-link" style={{ fontSize: '13px' }}>Privacy Policy</a>
+              <a href="/terms" className="nav-link" style={{ fontSize: '13px' }}>Terms of Service</a>
+              <a href="/disclaimer" className="nav-link" style={{ fontSize: '13px' }}>Disclaimer</a>
+            </div>
+          </div>
+          <div style={{ borderTop: '1px solid #1a1a1a', paddingTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ fontSize: '13px', color: '#444' }}>&copy; 2026 Enginus. All rights reserved.</div>
+            <div style={{ fontSize: '12px', color: '#444', fontStyle: 'italic' }}>Results are for educational purposes. Always verify with a licensed engineer.</div>
+          </div>
         </div>
       </footer>
     </main>
