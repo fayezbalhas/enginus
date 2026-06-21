@@ -35,6 +35,46 @@ const calculators = [
     status: 'free',
   },
   {
+    slug: 'rc-beam',
+    icon: '▧',
+    name: 'RC Beam Design',
+    desc: 'Reinforced concrete beam flexural design. Required reinforcement, min/max steel checks, bar arrangement.',
+    tags: ['RC Design'],
+    codes: ['EC2', 'ACI'],
+    units: ['SI', 'Imperial'],
+    status: 'pro',
+  },
+  {
+    slug: 'rc-slab',
+    icon: '▤',
+    name: 'RC Slab Design',
+    desc: 'One-way and two-way RC slab design. Required reinforcement per meter, bar spacing, deflection check.',
+    tags: ['RC Design'],
+    codes: ['EC2', 'ACI'],
+    units: ['SI', 'Imperial'],
+    status: 'pro',
+  },
+  {
+    slug: 'rc-column',
+    icon: '▥',
+    name: 'RC Column Design',
+    desc: 'RC column design with axial load and moment. Interaction diagram, required reinforcement, pass/fail.',
+    tags: ['RC Design'],
+    codes: ['EC2', 'ACI'],
+    units: ['SI', 'Imperial'],
+    status: 'pro',
+  },
+  {
+    slug: 'section-properties',
+    icon: '◫',
+    name: 'Section Properties',
+    desc: 'Area, moment of inertia, section modulus, radius of gyration for standard and custom sections.',
+    tags: ['Structural', 'Steel'],
+    codes: ['EC', 'ACI'],
+    units: ['SI', 'Imperial'],
+    status: 'free',
+  },
+  {
     slug: 'seismic',
     icon: '⊕',
     name: 'Seismic Base Shear',
@@ -51,16 +91,6 @@ const calculators = [
     desc: 'Wind pressure and force on structures per EN 1991-1-4 and ASCE 7-22.',
     tags: ['Loads'],
     codes: ['EC1', 'ASCE 7'],
-    units: ['SI', 'Imperial'],
-    status: 'coming',
-  },
-  {
-    slug: 'section',
-    icon: '◫',
-    name: 'Section Properties',
-    desc: 'Moment of inertia, section modulus, radius of gyration for standard and custom sections.',
-    tags: ['Structural', 'Steel'],
-    codes: ['EC', 'ACI'],
     units: ['SI', 'Imperial'],
     status: 'coming',
   },
@@ -116,6 +146,7 @@ export default function CalculatorsPage() {
         .code-pill { background: rgba(204,0,0,0.1); color: #cc0000; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 2px; }
 
         .status-free { background: rgba(204,0,0,0.15); color: #ff4444; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 4px 9px; border-radius: 3px; }
+        .status-pro { background: rgba(234,179,8,0.15); color: #eab308; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 4px 9px; border-radius: 3px; }
         .status-coming { background: rgba(255,255,255,0.05); color: #555; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 4px 9px; border-radius: 3px; }
 
         .fade-in { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
@@ -169,15 +200,15 @@ export default function CalculatorsPage() {
             {filtered.map((calc, i) => (
               <a
                 key={calc.slug}
-                href={calc.status === 'free' ? `/calculators/${calc.slug}` : undefined}
+                href={calc.status !== 'coming' ? `/calculators/${calc.slug}` : undefined}
                 className={`calc-card${calc.status === 'coming' ? ' coming' : ''} fade-in${visible ? ' show' : ''}`}
                 style={{ transitionDelay: `${0.15 + i * 0.07}s` }}
               >
                 {/* Top row */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
                   <span className="card-icon" style={{ fontSize: '28px', color: '#cc0000' }}>{calc.icon}</span>
-                  <span className={calc.status === 'free' ? 'status-free' : 'status-coming'}>
-                    {calc.status === 'free' ? 'FREE' : 'COMING SOON'}
+                  <span className={calc.status === 'free' ? 'status-free' : calc.status === 'pro' ? 'status-pro' : 'status-coming'}>
+                    {calc.status === 'free' ? 'FREE' : calc.status === 'pro' ? 'PRO' : 'COMING SOON'}
                   </span>
                 </div>
 

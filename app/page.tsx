@@ -1,7 +1,79 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import Navbar from './components/Navbar'
+
+interface FloatingShape {
+  x: number; y: number; vx: number; vy: number
+  size: number; opacity: number; rotation: number; rotSpeed: number
+  type: number; parallaxFactor: number
+}
+
+const SHAPE_COUNT = 28
+
+function drawShape(ctx: CanvasRenderingContext2D, type: number, size: number) {
+  const s = size
+  switch (type) {
+    case 0: // beam with supports
+      ctx.beginPath(); ctx.moveTo(-s, 0); ctx.lineTo(s, 0); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(-s * 0.8, 0); ctx.lineTo(-s * 0.8 - s * 0.15, s * 0.3); ctx.lineTo(-s * 0.8 + s * 0.15, s * 0.3); ctx.closePath(); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(s * 0.8, 0); ctx.lineTo(s * 0.8 - s * 0.15, s * 0.3); ctx.lineTo(s * 0.8 + s * 0.15, s * 0.3); ctx.closePath(); ctx.stroke()
+      break
+    case 1: // I-section
+      ctx.beginPath(); ctx.moveTo(-s * 0.5, -s * 0.6); ctx.lineTo(s * 0.5, -s * 0.6); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(-s * 0.5, s * 0.6); ctx.lineTo(s * 0.5, s * 0.6); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(0, -s * 0.6); ctx.lineTo(0, s * 0.6); ctx.stroke()
+      break
+    case 2: // triangle (truss)
+      ctx.beginPath(); ctx.moveTo(0, -s * 0.6); ctx.lineTo(-s * 0.6, s * 0.4); ctx.lineTo(s * 0.6, s * 0.4); ctx.closePath(); ctx.stroke()
+      break
+    case 3: // circle (cross section)
+      ctx.beginPath(); ctx.arc(0, 0, s * 0.5, 0, Math.PI * 2); ctx.stroke()
+      break
+    case 4: // rectangle (column)
+      ctx.strokeRect(-s * 0.4, -s * 0.55, s * 0.8, s * 1.1)
+      break
+    case 5: // sine wave (deflection)
+      ctx.beginPath()
+      for (let i = -20; i <= 20; i++) { const px = (i / 20) * s; const py = Math.sin((i / 20) * Math.PI * 2) * s * 0.25; i === -20 ? ctx.moveTo(px, py) : ctx.lineTo(px, py) }
+      ctx.stroke()
+      break
+    case 6: // integral symbol
+      ctx.font = `${s * 1.4}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('∫', 0, 0)
+      break
+    case 7: // sigma
+      ctx.font = `${s * 1.2}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('Σ', 0, 0)
+      break
+    case 8: // delta
+      ctx.font = `${s * 1.2}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('Δ', 0, 0)
+      break
+    case 9: // pi
+      ctx.font = `${s * 1.2}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('π', 0, 0)
+      break
+    case 10: // moment arrow (curved)
+      ctx.beginPath(); ctx.arc(0, 0, s * 0.4, -Math.PI * 0.8, Math.PI * 0.5); ctx.stroke()
+      ctx.beginPath(); const ax = s * 0.4 * Math.cos(Math.PI * 0.5); const ay = s * 0.4 * Math.sin(Math.PI * 0.5)
+      ctx.moveTo(ax - s * 0.12, ay - s * 0.08); ctx.lineTo(ax, ay); ctx.lineTo(ax + s * 0.12, ay - s * 0.08); ctx.stroke()
+      break
+    case 11: // force arrow
+      ctx.beginPath(); ctx.moveTo(0, -s * 0.6); ctx.lineTo(0, s * 0.4); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(-s * 0.15, s * 0.2); ctx.lineTo(0, s * 0.4); ctx.lineTo(s * 0.15, s * 0.2); ctx.stroke()
+      break
+    case 12: // matrix brackets
+      ctx.beginPath(); ctx.moveTo(-s * 0.3, -s * 0.5); ctx.lineTo(-s * 0.45, -s * 0.5); ctx.lineTo(-s * 0.45, s * 0.5); ctx.lineTo(-s * 0.3, s * 0.5); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(s * 0.3, -s * 0.5); ctx.lineTo(s * 0.45, -s * 0.5); ctx.lineTo(s * 0.45, s * 0.5); ctx.lineTo(s * 0.3, s * 0.5); ctx.stroke()
+      break
+    case 13: // rebar symbol (diameter)
+      ctx.font = `${s * 1.1}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('⌀', 0, 0)
+      break
+    case 14: // angle symbol
+      ctx.beginPath(); ctx.moveTo(-s * 0.4, s * 0.3); ctx.lineTo(-s * 0.1, -s * 0.3); ctx.lineTo(s * 0.4, s * 0.3); ctx.stroke()
+      break
+    case 15: // square root
+      ctx.font = `${s * 1.2}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('√', 0, 0)
+      break
+  }
+}
 
 export default function Home() {
   const [visible, setVisible] = useState<Record<string, boolean>>({})
@@ -9,26 +81,25 @@ export default function Home() {
   const [loaded, setLoaded] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const observerRef = useRef<IntersectionObserver | null>(null)
+  const mouseRef = useRef({ x: 0, y: 0 })
 
-  // Page load trigger
   useEffect(() => {
     const t = setTimeout(() => setLoaded(true), 100)
     return () => clearTimeout(t)
   }, [])
 
-  // Mouse parallax
-  useEffect(() => {
-    const handleMouse = (e: MouseEvent) => {
-      setMouse({
-        x: (e.clientX / window.innerWidth - 0.5) * 2,
-        y: (e.clientY / window.innerHeight - 0.5) * 2,
-      })
-    }
-    window.addEventListener('mousemove', handleMouse)
-    return () => window.removeEventListener('mousemove', handleMouse)
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    const mx = (e.clientX / window.innerWidth - 0.5) * 2
+    const my = (e.clientY / window.innerHeight - 0.5) * 2
+    setMouse({ x: mx, y: my })
+    mouseRef.current = { x: mx, y: my }
   }, [])
 
-  // Scroll reveal observer
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [handleMouseMove])
+
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
       (entries) => {
@@ -44,7 +115,6 @@ export default function Home() {
     return () => observerRef.current?.disconnect()
   }, [])
 
-  // Particle network canvas
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -61,65 +131,45 @@ export default function Home() {
     }
     window.addEventListener('resize', handleResize)
 
-    const NODE_COUNT = Math.min(70, Math.floor(w / 24))
-    const nodes = Array.from({ length: NODE_COUNT }, () => ({
+    const shapes: FloatingShape[] = Array.from({ length: SHAPE_COUNT }, () => ({
       x: Math.random() * w,
       y: Math.random() * h,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      size: 14 + Math.random() * 22,
+      opacity: 0.04 + Math.random() * 0.04,
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.003,
+      type: Math.floor(Math.random() * 16),
+      parallaxFactor: 0.3 + Math.random() * 0.7,
     }))
-
-    let mx = w / 2, my = h / 2
-    const onMove = (e: MouseEvent) => { mx = e.clientX; my = e.clientY }
-    window.addEventListener('mousemove', onMove)
 
     const draw = () => {
       ctx.clearRect(0, 0, w, h)
+      const m = mouseRef.current
 
-      nodes.forEach((n) => {
-        n.x += n.vx
-        n.y += n.vy
-        if (n.x < 0 || n.x > w) n.vx *= -1
-        if (n.y < 0 || n.y > h) n.vy *= -1
+      shapes.forEach((sh) => {
+        sh.x += sh.vx
+        sh.y += sh.vy
+        sh.rotation += sh.rotSpeed
 
-        // Mouse attraction
-        const dx = mx - n.x
-        const dy = my - n.y
-        const dist = Math.sqrt(dx * dx + dy * dy)
-        if (dist < 180) {
-          n.x += dx * 0.0015
-          n.y += dy * 0.0015
-        }
-      })
+        if (sh.x < -60) sh.x = w + 60
+        if (sh.x > w + 60) sh.x = -60
+        if (sh.y < -60) sh.y = h + 60
+        if (sh.y > h + 60) sh.y = -60
 
-      // Connections
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const dx = nodes[i].x - nodes[j].x
-          const dy = nodes[i].y - nodes[j].y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-          if (dist < 130) {
-            const opacity = (1 - dist / 130) * 0.5
-            ctx.strokeStyle = `rgba(204,0,0,${opacity})`
-            ctx.lineWidth = 0.6
-            ctx.beginPath()
-            ctx.moveTo(nodes[i].x, nodes[i].y)
-            ctx.lineTo(nodes[j].x, nodes[j].y)
-            ctx.stroke()
-          }
-        }
-      }
+        const px = sh.x + m.x * 20 * sh.parallaxFactor
+        const py = sh.y + m.y * 20 * sh.parallaxFactor
 
-      // Nodes
-      nodes.forEach((n) => {
-        const dxm = mx - n.x
-        const dym = my - n.y
-        const dm = Math.sqrt(dxm * dxm + dym * dym)
-        const near = dm < 180
-        ctx.fillStyle = near ? 'rgba(255,68,68,0.9)' : 'rgba(204,0,0,0.5)'
-        ctx.beginPath()
-        ctx.arc(n.x, n.y, near ? 2.4 : 1.6, 0, Math.PI * 2)
-        ctx.fill()
+        ctx.save()
+        ctx.translate(px, py)
+        ctx.rotate(sh.rotation)
+        ctx.globalAlpha = sh.opacity
+        ctx.strokeStyle = '#cc0000'
+        ctx.fillStyle = '#cc0000'
+        ctx.lineWidth = 1.2
+        drawShape(ctx, sh.type, sh.size)
+        ctx.restore()
       })
 
       animationId = requestAnimationFrame(draw)
@@ -129,7 +179,6 @@ export default function Home() {
     return () => {
       cancelAnimationFrame(animationId)
       window.removeEventListener('resize', handleResize)
-      window.removeEventListener('mousemove', onMove)
     }
   }, [])
 
@@ -277,11 +326,11 @@ export default function Home() {
         {/* Hero */}
         <section className="hero-pad" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '120px 24px 80px', position: 'relative', overflow: 'hidden' }}>
 
-          {/* Particle network canvas */}
+          {/* Floating structural shapes canvas */}
           <canvas ref={canvasRef} style={{
             position: 'absolute', inset: 0, zIndex: 0,
-            maskImage: 'radial-gradient(ellipse 75% 65% at 50% 45%, black 25%, transparent 80%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 75% 65% at 50% 45%, black 25%, transparent 80%)',
+            maskImage: 'radial-gradient(ellipse 80% 70% at 50% 45%, black 20%, transparent 75%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 45%, black 20%, transparent 75%)',
           }} />
 
           {/* Glow following mouse */}

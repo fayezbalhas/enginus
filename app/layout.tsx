@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Enginus | Structural Engineering Tools",
+  title: "Enginus | Free Structural Engineering Calculators",
   description:
-    "Free online structural calculators and professional Excel templates for civil and structural engineers. Supports Eurocode and ACI in both SI and Imperial units.",
+    "Free online structural calculators for civil and structural engineers. Beam calculator, unit converter, rebar calculator. Supports Eurocode and ACI.",
   other: {
     "google-adsense-account": "ca-pub-4165660927287862",
   },
