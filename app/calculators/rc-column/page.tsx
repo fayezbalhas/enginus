@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Navbar from '../../components/Navbar'
+import ProGate from '../../components/ProGate'
 
 type DesignCode = 'EC2' | 'ACI'
 type UnitSystem = 'SI' | 'Imperial'
@@ -230,6 +231,7 @@ export default function RcColumnPage() {
 
       <Navbar activePage="calculators" />
 
+      <ProGate>
       <div className="calc-wrap">
         <div style={{ marginBottom: '36px' }}>
           <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.14em', color: '#cc0000', textTransform: 'uppercase', marginBottom: '12px' }}>Pro Calculator</div>
@@ -342,6 +344,7 @@ export default function RcColumnPage() {
           </div>
         </div>
       </div>
+      </ProGate>
     </main>
   )
 }

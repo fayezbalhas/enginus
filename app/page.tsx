@@ -136,8 +136,8 @@ export default function Home() {
       y: Math.random() * h,
       vx: (Math.random() - 0.5) * 0.3,
       vy: (Math.random() - 0.5) * 0.3,
-      size: 14 + Math.random() * 22,
-      opacity: 0.04 + Math.random() * 0.04,
+      size: 22 + Math.random() * 30,
+      opacity: 0.06 + Math.random() * 0.04,
       rotation: Math.random() * Math.PI * 2,
       rotSpeed: (Math.random() - 0.5) * 0.003,
       type: Math.floor(Math.random() * 16),
@@ -358,7 +358,7 @@ export default function Home() {
             </h1>
 
             <p className="hero-stagger d3" style={{ fontSize: '18px', color: '#888', lineHeight: 1.7, maxWidth: '580px', margin: '0 auto 48px', fontWeight: 300 }}>
-              Free online structural calculators and professional Excel templates for civil and structural engineers &mdash; supporting Eurocode and ACI, in both SI and Imperial units.
+              Free online structural calculators and professional design tools for civil and structural engineers &mdash; supporting Eurocode and ACI, in both SI and Imperial units.
             </p>
 
             <div className="hero-stagger d4" style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>

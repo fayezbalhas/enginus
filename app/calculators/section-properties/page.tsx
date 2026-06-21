@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Navbar from '../../components/Navbar'
+import ProGate from '../../components/ProGate'
 
 type ShapeType = 'rectangle' | 'circle' | 'i-section' | 't-section' | 'hollow-rect' | 'hollow-circle'
 type DimUnit = 'mm' | 'cm' | 'm' | 'in' | 'ft'
@@ -233,6 +234,7 @@ export default function SectionPropertiesPage() {
 
       <Navbar activePage="calculators" />
 
+      <ProGate>
       <div className="calc-wrap">
         <div style={{ marginBottom: '36px' }}>
           <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.14em', color: '#cc0000', textTransform: 'uppercase', marginBottom: '12px' }}>Calculator</div>
@@ -325,6 +327,7 @@ export default function SectionPropertiesPage() {
           </div>
         </div>
       </div>
+      </ProGate>
     </main>
   )
 }
