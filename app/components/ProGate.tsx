@@ -5,18 +5,16 @@ import { supabase } from '@/lib/supabase'
 
 export default function ProGate({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
-  const [hasAccess, setHasAccess] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      const isPro = data.user?.user_metadata?.plan === 'pro'
-      setHasAccess(isPro)
+      setIsLoggedIn(!!data.user)
       setLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      const isPro = session?.user?.user_metadata?.plan === 'pro'
-      setHasAccess(isPro)
+      setIsLoggedIn(!!session?.user)
       setLoading(false)
     })
 
@@ -25,7 +23,7 @@ export default function ProGate({ children }: { children: React.ReactNode }) {
 
   if (loading) return <>{children}</>
 
-  if (hasAccess) return <>{children}</>
+  if (isLoggedIn) return <>{children}</>
 
   return (
     <div style={{ position: 'relative' }}>
@@ -46,16 +44,16 @@ export default function ProGate({ children }: { children: React.ReactNode }) {
             borderRadius: '4px', padding: '6px 16px', fontSize: '11px', fontWeight: 700,
             letterSpacing: '0.12em', color: '#ff4444', textTransform: 'uppercase', marginBottom: '20px',
           }}>
-            Pro Feature
+            Sign In Required
           </div>
           <p style={{
             fontSize: '16px', color: '#999', lineHeight: 1.7, marginBottom: '32px',
             fontFamily: "'Inter', sans-serif",
           }}>
-            Sign up and upgrade to Pro to access this calculator.
+            Sign in to your account to access this calculator.
           </p>
           <a
-            href="/pro"
+            href="/auth"
             style={{
               background: '#cc0000', color: '#fff', border: 'none', padding: '14px 32px',
               fontSize: '15px', fontWeight: 600, borderRadius: '4px', cursor: 'pointer',
@@ -63,7 +61,7 @@ export default function ProGate({ children }: { children: React.ReactNode }) {
               letterSpacing: '0.02em',
             }}
           >
-            Get Pro Access
+            Sign In
           </a>
         </div>
       </div>
